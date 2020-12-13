@@ -55,11 +55,9 @@
 	NSMutableArray * newArgArray = [NSMutableArray array];
 	BOOL hasError = NO;
 
-	if ([argObject isKindOfClass:[Folder class]])
+	if ([argObject isKindOfClass:[Folder class]]) {
 		[newArgArray addObject:argObject];
-
-	else if ([argObject isKindOfClass:[NSArray class]])
-	{
+	} else if ([argObject isKindOfClass:[NSArray class]]) {
 		NSArray * argArray = (NSArray *)argObject;
 		NSInteger index;
 
@@ -82,8 +80,9 @@
 				if ([evaluatedItem isKindOfClass:[NSArray class]])
 				{
 					NSArray * newArray = [self evaluatedArrayOfFolders:evaluatedItem withCommand:cmd];
-					if (newArray == nil)
+					if (newArray == nil) {
 						return nil;
+					}
 
 					[newArgArray addObjectsFromArray:newArray];
 					continue;
@@ -93,8 +92,9 @@
 			break;
 		}
 	}
-	if (!hasError)
+	if (!hasError) {
 		return [newArgArray copy];
+	}
 
 	// At least one of the arguments didn't evaluate to a Folder object
 	cmd.scriptErrorNumber = errASIllegalFormalParameter;
@@ -109,8 +109,9 @@
 {
 	NSDictionary * args = cmd.evaluatedArguments;
 	NSArray * argArray = [self evaluatedArrayOfFolders:args[@"Folder"] withCommand:cmd];
-	if (argArray != nil)
+	if (argArray != nil) {
 		[[RefreshManager sharedManager] refreshSubscriptions:argArray ignoringSubscriptionStatus:YES];
+	}
 
 	return nil;
 }
@@ -122,8 +123,9 @@
 {
 	NSDictionary * args = cmd.evaluatedArguments;
 	NSArray * argArray = [self evaluatedArrayOfFolders:args[@"Folder"] withCommand:cmd];
-	if (argArray != nil)
+	if (argArray != nil) {
 		[(AppController*)self.delegate markSelectedFoldersRead:argArray];
+	}
 
 	return nil;
 }
@@ -177,8 +179,9 @@
 	NSArray * argArray = argObject ? [self evaluatedArrayOfFolders:argObject withCommand:cmd] : [[Database sharedManager] arrayOfFolders:VNAFolderTypeRoot];
 
 	NSInteger countExported = 0;
-	if (argArray != nil)
+	if (argArray != nil) {
 		countExported = [Export exportToFile:args[@"FileName"] from:argArray inFoldersTree:((AppController*)self.delegate).foldersTree withGroups:YES];
+	}
 	return @(countExported);
 }
 
@@ -251,21 +254,25 @@
 	NSView<BaseView> * theView = ((AppController*)self.delegate).browser.activeTabItemView;
 	WebView * webPane = nil;
 
-	if ([theView isKindOfClass:[BrowserPane class]])
+	if ([theView isKindOfClass:[BrowserPane class]]) {
 		webPane = (WebView *)((BrowserPane *)theView).mainView;
+	}
 
-	if ([theView isKindOfClass:[ArticleListView class]])
+	if ([theView isKindOfClass:[ArticleListView class]]) {
 		webPane = (WebView *)((ArticleListView *)theView).webView;
+	}
 	
-	if ([theView isKindOfClass:[UnifiedDisplayView class]])
+	if ([theView isKindOfClass:[UnifiedDisplayView class]]) {
 		webPane = (WebView *)((UnifiedDisplayView *)theView).webView;
+	}
 	
 	if (webPane != nil)
 	{
 		NSView * docView = webPane.mainFrame.frameView.documentView;
 		
-		if ([docView conformsToProtocol:@protocol(WebDocumentText)])
+		if ([docView conformsToProtocol:@protocol(WebDocumentText)]) {
 			return [(id<WebDocumentText>)docView selectedString];
+		}
 	}
 	return @"";
 }
@@ -281,8 +288,9 @@
 		if (dataSource != nil)
 		{
 			id representation = dataSource.representation;
-			if ((representation != nil) && ([representation conformsToProtocol:@protocol(WebDocumentRepresentation)]) && ([(id<WebDocumentRepresentation>)representation canProvideDocumentSource]))
+			if ((representation != nil) && ([representation conformsToProtocol:@protocol(WebDocumentRepresentation)]) && ([(id<WebDocumentRepresentation>)representation canProvideDocumentSource])) {
 				return [(id<WebDocumentRepresentation>)representation documentSource];
+			}
 		}
 	}
 	return @"";
@@ -295,8 +303,9 @@
 	{
 		return ((BrowserPane *)theView).url.absoluteString;
 	}
-	else
+	else {
 		return @"";
+	}
 }
 
 /* currentArticle

@@ -176,8 +176,9 @@
 	NSURL * rssFeedURL;
 	NSString * feedURLString = (feedURL.stringValue).trim;
 	// Replace feed:// with http:// if necessary
-	if ([feedURLString hasPrefix:@"feed://"])
+	if ([feedURLString hasPrefix:@"feed://"]) {
 		feedURLString = [NSString stringWithFormat:@"http://%@", [feedURLString substringFromIndex:7]];
+	}
 
 	// Format the URL based on the selected feed source.
 	if (sourcesDict != nil)
@@ -305,8 +306,9 @@
 			showButton = [itemDict valueForKey:@"SiteHomePage"] != nil;
 		}
 	}
-	if (linkTitleString == nil)
+	if (linkTitleString == nil) {
 		linkTitleString = @"Link";
+	}
 	linkTitle.stringValue = [NSString stringWithFormat:@"%@:", linkTitleString];
 	siteHomePageButton.hidden = !showButton;
 }

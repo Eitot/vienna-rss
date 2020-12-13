@@ -163,8 +163,9 @@
  */
 -(NSString *)viewLink
 {
-	if (self.webPane.mainFrame.dataSource.unreachableURL)
+	if (self.webPane.mainFrame.dataSource.unreachableURL) {
 		return self.webPane.mainFrame.dataSource.unreachableURL.absoluteString;
+	}
 	return self.url.absoluteString;
 }
 
@@ -213,8 +214,9 @@
 		self.url = urlToLoad;
 		[self load];
 	}
-	else
+	else {
 		[self activateAddressBar];
+	}
 }
 
 /* activateAddressBar
@@ -374,10 +376,11 @@
 	{
 		if (deltaX != 0)
 		{
-			if (deltaX > 0)
+			if (deltaX > 0) {
 				[self handleGoBack:self];
-			else 
+			} else { 
 				[self handleGoForward:self];
+			}
 		}
 	}
 	// Otherwise, she wants to go to the top/bottom of the page.
@@ -385,10 +388,11 @@
 	{
 		if (deltaY != 0)
 		{
-			if (deltaY > 0)
+			if (deltaY > 0) {
 				[self.webPane scrollToTop];
-			else 
+			} else { 
 				[self.webPane scrollToBottom];
+			}
 		}
 	}
 }
@@ -398,10 +402,11 @@
  */
 -(IBAction)handleReload:(id)sender
 {
-	if (self.webPane.mainFrame.dataSource != nil)
+	if (self.webPane.mainFrame.dataSource != nil) {
 		[self.webPane reload:self];
-	else
+	} else {
 		[self handleAddress:self];
+	}
 }
 
 /* handleStopLoading webview
@@ -670,8 +675,9 @@
             [frame loadAlternateHTMLString:errorMessage baseURL:[NSURL fileURLWithPath:pathToErrorPage isDirectory:NO] forUnreachableURL:frame.provisionalDataSource.request.URL];
         }
         NSString *unreachableURL = frame.provisionalDataSource.unreachableURL.absoluteString;
-        if (unreachableURL != nil)
+        if (unreachableURL != nil) {
             self.url = frame.provisionalDataSource.unreachableURL;
+        }
     }
 }
 

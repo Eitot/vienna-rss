@@ -52,10 +52,11 @@
 	NSString * pluginName;
 	NSString * path;
 
-	if (allPlugins == nil)
+	if (allPlugins == nil) {
 		allPlugins = [[NSMutableDictionary alloc] init];
-	else
+	} else {
 		[allPlugins removeAllObjects];
+	}
 	
 	pluginPaths = [[NSMutableDictionary alloc] init];
 	
@@ -84,10 +85,9 @@
 	
 	// If the info.plist is missing or corrupted, warn but then just move on and the user
 	// will have to figure it out.
-	if (pluginInfo == nil)
+	if (pluginInfo == nil) {
 		NSLog(@"Missing or corrupt info.plist in %@", pluginPath);
-	else
-	{
+	} else {
 		// We need to save the path to the plugin in the plugin object for later access to other
 		// resources in the plugin folder.
 		pluginInfo[@"Path"] = pluginPath;
@@ -118,8 +118,9 @@
 
         NSString * pluginName = onePlugin[@"Name"];
         NSString * menuPath = onePlugin[@"MenuPath"];
-        if (menuPath == nil)
+        if (menuPath == nil) {
             continue;
+        }
 
         // Parse off the shortcut key, if there is one. The format is a series of
         // control key specifiers: Cmd, Shift, Alt or Ctrl - specified in any
@@ -137,18 +138,18 @@
 
             for (oneKey in keyArray)
             {
-                if ([oneKey isEqualToString:@"Cmd"])
+                if ([oneKey isEqualToString:@"Cmd"]) {
                     keyMod |= NSEventModifierFlagCommand;
-                else if ([oneKey isEqualToString:@"Shift"])
+                } else if ([oneKey isEqualToString:@"Shift"]) {
                     keyMod |= NSEventModifierFlagShift;
-                else if ([oneKey isEqualToString:@"Alt"])
+                } else if ([oneKey isEqualToString:@"Alt"]) {
                     keyMod |= NSEventModifierFlagOption;
-                else if ([oneKey isEqualToString:@"Ctrl"])
+                } else if ([oneKey isEqualToString:@"Ctrl"]) {
                     keyMod |= NSEventModifierFlagControl;
-                else
-                {
-                    if (!keyChar.blank)
+                } else {
+                    if (!keyChar.blank) {
                         NSLog(@"Warning: malformed MenuKey found in info.plist for plugin %@", pluginName);
+                    }
                     keyChar = oneKey;
                 }
             }
@@ -202,8 +203,9 @@
 	{
 		NSDictionary * onePlugin = allPlugins[pluginName];
 		pluginType = onePlugin[@"Type"];
-		if (![pluginType isEqualToString:@"SearchEngine"])
+		if (![pluginType isEqualToString:@"SearchEngine"]) {
 			[toolbarKeys addObject:pluginName];
+		}
 	}
 	return toolbarKeys;
 }
@@ -219,8 +221,9 @@
 	for (pluginName in allPlugins)
 	{
 		NSDictionary * onePlugin = allPlugins[pluginName];
-		if ([onePlugin[@"Default"] integerValue])
+		if ([onePlugin[@"Default"] integerValue]) {
 			[newArray addObject:pluginName];
+		}
 	}
 	return newArray;
 }
@@ -237,10 +240,12 @@
 		NSString * tooltip = pluginItem[@"Tooltip"];
         NSString *imagePath = [NSString stringWithFormat:@"%@/%@.tiff", pluginItem[@"Path"], pluginItem[@"ButtonImage"]];
 
-		if (friendlyName == nil)
+		if (friendlyName == nil) {
 			friendlyName = itemIdentifier;
-		if (tooltip == nil)
+		}
+		if (tooltip == nil) {
 			tooltip = friendlyName;
+		}
 		
         item.label = friendlyName;
         item.paletteLabel = item.label;
@@ -264,10 +269,11 @@
     NSView<BaseView> * theView = APPCONTROLLER.browser.activeTabItemView;
     Article * thisArticle = APPCONTROLLER.selectedArticle;
 
-    if ([theView isKindOfClass:[BrowserPane class]])
+    if ([theView isKindOfClass:[BrowserPane class]]) {
         return ((theView.viewLink != nil) && NSApp.active);
-    else
+    } else {
         return (thisArticle != nil && NSApp.active);
+    }
 }
 
 /* validateMenuItem
@@ -278,10 +284,11 @@
     NSView<BaseView> * theView = APPCONTROLLER.browser.activeTabItemView;
     Article * thisArticle = APPCONTROLLER.selectedArticle;
 
-    if ([theView isKindOfClass:[BrowserPane class]])
+    if ([theView isKindOfClass:[BrowserPane class]]) {
         return ((theView.viewLink != nil) && NSApp.active);
-    else
+    } else {
         return (thisArticle != nil && NSApp.active);
+    }
 }
 
 /* pluginInvocator
@@ -308,8 +315,9 @@
 		if ([itemType isEqualToString:@"Link"])
 		{
 			NSMutableString * urlString  = [NSMutableString stringWithString:pluginItem[@"URL"]];
-			if (urlString == nil)
+			if (urlString == nil) {
 				return;
+			}
 			
 			// Get the view that the user is currently looking at...
 			NSView<BaseView> * theView = APPCONTROLLER.browser.activeTabItemView;
@@ -333,8 +341,9 @@
 			if (urlString != nil)
 			{
 				NSURL * urlToLoad = cleanedUpUrlFromString(urlString);				
-				if (urlToLoad != nil)
+				if (urlToLoad != nil) {
 					[APPCONTROLLER.browser createAndLoadNewTab:urlToLoad inBackground:NO];
+				}
 			}
 			else
 			{
@@ -350,8 +359,9 @@
 			// filename of the script file in the same folder.
 			NSString * pluginPath = pluginItem[@"Path"];
 			NSString * scriptFile = [pluginPath stringByAppendingPathComponent:pluginItem[@"Script"]];
-			if (scriptFile == nil)
+			if (scriptFile == nil) {
 				return;
+			}
 
 			// Just run the script
 			[APPCONTROLLER runAppleScript:scriptFile];

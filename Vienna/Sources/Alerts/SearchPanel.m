@@ -64,8 +64,9 @@
 		[theView performFindPanelAction:NSFindPanelActionSetFindString];
 		[APPCONTROLLER setFocusToSearchField:self];
 	}
-	else
+	else {
 		[APPCONTROLLER searchArticlesWithString:searchField.stringValue];
+	}
 	
 	[searchPanelWindow.sheetParent endSheet:searchPanelWindow];
 	[searchPanelWindow orderOut:self];

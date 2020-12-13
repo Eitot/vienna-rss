@@ -82,8 +82,9 @@
 	if (theEvent.characters.length == 1)
 	{
 		unichar keyChar = [theEvent.characters characterAtIndex:0];
-		if ([APPCONTROLLER handleKeyDown:keyChar withFlags:theEvent.modifierFlags])
+		if ([APPCONTROLLER handleKeyDown:keyChar withFlags:theEvent.modifierFlags]) {
 			return;
+		}
 	}
 	[super keyDown:theEvent];
 }
@@ -103,9 +104,10 @@
  */
 -(void)reloadData
 {
-    if (_filterDataSource && _filterPredicate)
+    if (_filterDataSource && _filterPredicate) {
         [_filterDataSource reloadData:self];
-	[super reloadData];
+    }
+    [super reloadData];
 }
 
 - (NSPredicate*)filterPredicate {
@@ -113,8 +115,9 @@
 }
 
 - (void)setFilterPredicate:(NSPredicate *)filterPredicate {
-    if (_filterPredicate == filterPredicate)
+    if (_filterPredicate == filterPredicate) {
         return;
+    }
 
     if (_filterPredicate == nil) {
         _prefilterState = self.state;
@@ -176,9 +179,10 @@
  */
 -(NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(outlineView:menuWillAppear:)])
+    if (self.delegate && [self.delegate respondsToSelector:@selector(outlineView:menuWillAppear:)]) {
         [(id)self.delegate outlineView:self menuWillAppear:theEvent];
-	return self.menu;
+    }
+    return self.menu;
 }
 
 /* copy
@@ -253,8 +257,9 @@
 		NSRect selectedRect = [self rectOfRow:rowIndex];
 		if (NSIntersectsRect(selectedRect, rect))
 		{
-			if (self.editedRow != -1)
+			if (self.editedRow != -1) {
 				[self performSelector:@selector(prvtResizeTheFieldEditor) withObject:nil afterDelay:0.001];
+			}
 		}
 		rowIndex = [selectedRowIndexes indexGreaterThanIndex:rowIndex];
 	}
@@ -276,10 +281,9 @@
 	[layoutManager boundingRectForGlyphRange:NSMakeRange(0, layoutManager.numberOfGlyphs) inTextContainer:[editor textContainer]];
 	frame.size.width = [layoutManager usedRectForTextContainer:[editor textContainer]].size.width;
 	
-	if (editRect.size.width > frame.size.width)
+	if (editRect.size.width > frame.size.width) {
 		[editor superview].frame = frame;
-	else
-	{
+	} else {
 		frame.size.width = editRect.size.width-4;
 		[editor superview].frame = frame;
 	}
@@ -371,8 +375,9 @@
 		// For some reason we lose firstResponder status when when we do the above.
 		[self.window makeFirstResponder:self];
 	}
-	else
+	else {
 		[super textDidEndEditing:notification];
+	}
 }
 
 #pragma clang diagnostic pop

@@ -134,8 +134,9 @@ static NSString * _userAgent ;
  */
 -(instancetype)initWithFrame:(NSRect)frameRect frameName:(NSString *)frameName groupName:(NSString *)groupName
 {
-	if ((self = [super initWithFrame:frameRect frameName:frameName groupName:groupName]) != nil)
+	if ((self = [super initWithFrame:frameRect frameName:frameName groupName:groupName]) != nil) {
 		[self initTabbedWebView];
+	}
 	return self;
 }
 
@@ -374,10 +375,9 @@ static NSString * _userAgent ;
 -(void)loadMinimumFontSize
 {
 	Preferences * prefs = [Preferences standardPreferences];
-	if (!prefs.enableMinimumFontSize)
+	if (!prefs.enableMinimumFontSize) {
 		[TabbedWebView defaultWebPrefs].minimumFontSize = [TabbedWebView passiveWebPrefs].minimumFontSize = [TabbedWebView withJavaScriptWebPrefs].minimumFontSize= 1;
-	else
-	{
+	} else {
 		NSInteger size = prefs.minimumFontSize;
 		[TabbedWebView defaultWebPrefs].minimumFontSize = [TabbedWebView passiveWebPrefs].minimumFontSize = [TabbedWebView withJavaScriptWebPrefs].minimumFontSize = (int)size;
 	}
@@ -393,15 +393,17 @@ static NSString * _userAgent ;
 	
 	myScrollView = self.mainFrame.frameView.documentView.enclosingScrollView;
 	
-    if ((myScrollView.documentView).flipped) 
+    if ((myScrollView.documentView).flipped) { 
         newScrollOrigin = NSMakePoint(0.0,NSMaxY((myScrollView.documentView).frame)-NSHeight(myScrollView.contentView.bounds));
-	else 
+	} else { 
 		newScrollOrigin = NSMakePoint(0.0,0.0);
+	}
 	
     [myScrollView.documentView scrollPoint: newScrollOrigin];	
 
-    if (myScrollView.verticalScroller.knobProportion < 0.05)
+    if (myScrollView.verticalScroller.knobProportion < 0.05) {
     	myScrollView.verticalScroller.knobProportion = 0.05;
+    }
 }
 
 /* scrollToTop

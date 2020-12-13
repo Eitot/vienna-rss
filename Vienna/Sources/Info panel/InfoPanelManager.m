@@ -103,8 +103,9 @@
 	InfoPanelController * infoWindow;
 	
 	infoWindow = controllerList[folderNumber];
-	if (infoWindow != nil)
+	if (infoWindow != nil) {
 		[infoWindow updateFolder];
+	}
 }
 
 /**

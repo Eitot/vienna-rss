@@ -290,8 +290,9 @@
 		{
 			BOOL doExpandItem = [[dict valueForKey:@"ExpandedState"] boolValue];
 			BOOL doSelectItem = [[dict valueForKey:@"SelectedState"] boolValue];
-			if ([self.outlineView isExpandable:node] && doExpandItem)
+			if ([self.outlineView isExpandable:node] && doExpandItem) {
 				[self.outlineView expandItem:node];
+			}
 			if (doSelectItem)
 			{
 				NSInteger row = [self.outlineView rowForItem:node];
@@ -322,8 +323,9 @@
 			TreeNode * subNode;
 
 			subNode = [[TreeNode alloc] init:node atIndex:-1 folder:folder canHaveChildren:(count > 0)];
-			if (count)
+			if (count) {
 				[self loadTree:listOfSubFolders rootNode:subNode];
+			}
 
 		}
 	}
@@ -400,10 +402,11 @@
 	NSMutableArray * array = [NSMutableArray array];
 	TreeNode * node;
 
-	if (!folderId)
+	if (!folderId) {
 		node = self.rootNode;
-	else
+	} else {
 		node = [self.rootNode nodeFromID:folderId];
+	}
 	node = node.firstChild;
 	while (node != nil)
 	{
@@ -420,8 +423,9 @@
 -(void)updateAlternateMenuTitle
 {
 	NSMenuItem * mainMenuItem = menuItemWithAction(@selector(viewSourceHomePageInAlternateBrowser:));
-	if (mainMenuItem == nil)
+	if (mainMenuItem == nil) {
 		return;
+	}
 	NSString * menuTitle = mainMenuItem.title;
 	NSInteger index;
 	NSMenu * folderMenu = self.outlineView.menu;
@@ -481,8 +485,9 @@
 -(BOOL)selectFolder:(NSInteger)folderId
 {
 	TreeNode * node = [self.rootNode nodeFromID:folderId];
-	if (!node)
+	if (!node) {
 		return NO;
+	}
 
 	// Walk up to our parent
 	[self expandToParent:node];
@@ -531,23 +536,28 @@
 	{
 		TreeNode * nextNode = nil;
 		TreeNode * parentNode = node.parentNode;
-		if ((node.folder.childUnreadCount > 0) && [self.outlineView isItemExpanded:node])
+		if ((node.folder.childUnreadCount > 0) && [self.outlineView isItemExpanded:node]) {
 			nextNode = node.firstChild;
-		if (nextNode == nil)
+		}
+		if (nextNode == nil) {
 			nextNode = node.nextSibling;
+		}
 		while (nextNode == nil && parentNode != nil)
 		{
 			nextNode = parentNode.nextSibling;
 			parentNode = parentNode.parentNode;
 		}
-		if (nextNode == nil)
+		if (nextNode == nil) {
 			nextNode = self.rootNode.firstChild;
+		}
 
-		if ((nextNode.folder.childUnreadCount) && ![self.outlineView isItemExpanded:nextNode])
+		if ((nextNode.folder.childUnreadCount) && ![self.outlineView isItemExpanded:nextNode]) {
 			return nextNode.nodeId;
+		}
 		
-		if (nextNode.folder.unreadCount)
+		if (nextNode.folder.unreadCount) {
 			return nextNode.nodeId;
+		}
 
 		// If we've gone full circle and not found
 		// anything, we're out of unread articles
@@ -712,8 +722,9 @@
 	if (self.canRenameFolders)
 	{
 		NSInteger clickedRow = self.outlineView.clickedRow;
-		if (clickedRow >= 0)
+		if (clickedRow >= 0) {
 			[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(renameFolderByTimer:) userInfo:[self.outlineView itemAtRow:clickedRow] repeats:NO];
+		}
 	}
 }
 
@@ -755,13 +766,13 @@
 	[thisNode stopAndReleaseProgressIndicator];
 
 	// First find the next node we'll select
-	if (thisNode.nextSibling != nil)
+	if (thisNode.nextSibling != nil) {
 		nextNode = thisNode.nextSibling;
-	else
-	{
+	} else {
 		nextNode = thisNode.parentNode;
-		if (nextNode.countOfChildren > 1)
+		if (nextNode.countOfChildren > 1) {
 			nextNode = [nextNode childByIndex:nextNode.countOfChildren - 2];
+		}
 	}
 
 	// Ask our parent to delete us
@@ -793,8 +804,9 @@
 
 	BOOL moveSelection = (folderId == self.actualSelection);
 
-	if ([Preferences standardPreferences].foldersTreeSortMethod == VNAFolderSortByName)
+	if ([Preferences standardPreferences].foldersTreeSortMethod == VNAFolderSortByName) {
 		[parentNode sortChildren:VNAFolderSortByName];
+	}
 
 	[self reloadFolderItem:parentNode reloadChildren:YES];
 	if (moveSelection)
@@ -818,10 +830,11 @@
 -(void)handleFolderUpdate:(NSNotification *)nc
 {
 	NSInteger folderId = ((NSNumber *)nc.object).integerValue;
-	if (folderId == 0)
+	if (folderId == 0) {
 		[self reloadFolderItem:self.rootNode reloadChildren:YES];
-	else
+	} else {
 		[self updateFolder:folderId recurseToParents:YES];
+	}
 }
 
 /* handleFolderAdded
@@ -834,8 +847,9 @@
 
 	NSInteger parentId = newFolder.parentId;
 	TreeNode * node = (parentId == VNAFolderTypeRoot) ? self.rootNode : [self.rootNode nodeFromID:parentId];
-	if (!node.canHaveChildren)
+	if (!node.canHaveChildren) {
 		[node setCanHaveChildren:YES];
+	}
 	
 	NSInteger childIndex = -1;
 	if ([Preferences standardPreferences].foldersTreeSortMethod == VNAFolderSortManual)
@@ -844,8 +858,9 @@
 		if (nextSiblingId > 0)
 		{
 			TreeNode * nextSibling = [node nodeFromID:nextSiblingId];
-			if (nextSibling != nil)
+			if (nextSibling != nil) {
 				childIndex = [node indexOfChild:nextSibling];
+			}
 		}
 	}
 	
@@ -859,10 +874,11 @@
  */
 -(void)reloadFolderItem:(id)node reloadChildren:(BOOL)flag
 {
-	if (node == self.rootNode)
+	if (node == self.rootNode) {
 		[self.outlineView reloadData];
-	else
+	} else {
 		[self.outlineView reloadItem:node reloadChildren:YES];
+	}
 }
 
 /* menuWillAppear
@@ -876,8 +892,9 @@
 	if (row >= 0)
 	{
 		// Select the row under the cursor if it isn't already selected
-		if (olv.numberOfSelectedRows <= 1)
+		if (olv.numberOfSelectedRows <= 1) {
 			[olv selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+		}
 	}
 }
 
@@ -888,8 +905,9 @@
 -(BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {
 	TreeNode * node = (TreeNode *)item;
-	if (node == nil)
+	if (node == nil) {
 		node = self.rootNode;
+	}
 	return node.canHaveChildren;
 }
 
@@ -899,8 +917,9 @@
 -(NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {
 	TreeNode * node = (TreeNode *)item;
-	if (node == nil)
+	if (node == nil) {
 		node = self.rootNode;
+	}
 	return node.countOfChildren;
 }
 
@@ -910,8 +929,9 @@
 -(id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
 {
 	TreeNode * node = (TreeNode *)item;
-	if (node == nil)
+	if (node == nil) {
 		node = self.rootNode;
+	}
 	return [node childByIndex:index];
 }
 
@@ -923,8 +943,9 @@
 	TreeNode * node = (TreeNode *)item;
 	if (self.useToolTips && node != nil)
 	{
-		if (node.folder.nonPersistedFlags & VNAFolderFlagError)
+		if (node.folder.nonPersistedFlags & VNAFolderFlagError) {
 			return NSLocalizedString(@"An error occurred when this feed was last refreshed", nil);
+		}
 		NSInteger unreadCount;
 		if (node.folder.childUnreadCount) {
 		    unreadCount = node.folder.childUnreadCount;
@@ -945,8 +966,9 @@
 -(id)outlineView:(NSOutlineView *)olv objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
 {
 	TreeNode * node = (TreeNode *)item;
-	if (node == nil)
+	if (node == nil) {
 		node = self.rootNode;
+	}
 
 	static NSDictionary * info = nil;
 	if (info == nil)
@@ -966,10 +988,11 @@
 		myInfo[NSForegroundColorAttributeName] = NSColor.labelColor;
     }
 	// Set the font
-	if (folder.unreadCount ||  (folder.childUnreadCount && ![olv isItemExpanded:item]))
+	if (folder.unreadCount ||  (folder.childUnreadCount && ![olv isItemExpanded:item])) {
 		myInfo[NSFontAttributeName] = self.boldCellFont;
-	else
+	} else {
 		myInfo[NSFontAttributeName] = self.cellFont;
+	}
 	
 	return [[NSAttributedString alloc] initWithString:node.nodeName attributes:myInfo];
 }
@@ -1132,15 +1155,14 @@
 	if (![folder.name isEqualToString:newName])
 	{
 		Database * dbManager = [Database sharedManager];
-		if ([dbManager folderFromName:newName] != nil)
+		if ([dbManager folderFromName:newName] != nil) {
 			runOKAlertPanel(NSLocalizedString(@"Cannot rename folder", nil), NSLocalizedString(@"A folder with that name already exists", nil));
-		else
-        {
-            [dbManager setName:newName forFolder:folder.itemId];
-            if (folder.type == VNAFolderTypeOpenReader) {
-                [[OpenReader sharedManager] setFolderTitle:newName forFeed:folder.remoteId];
-            }
-        }
+		} else {
+			[dbManager setName:newName forFolder:folder.itemId];
+			if (folder.type == VNAFolderTypeOpenReader) {
+				[[OpenReader sharedManager] setFolderTitle:newName forFeed:folder.remoteId];
+			}
+		}
 	}
 }
 
@@ -1304,8 +1326,9 @@
 		NSInteger oldPredecessorId = (oldChildIndex > 0) ? [oldParent childByIndex:(oldChildIndex - 1)].nodeId : 0;
 		TreeNode * newParent = [self.rootNode nodeFromID:newParentId];
 		TreeNode * newPredecessor = [newParent nodeFromID:newPredecessorId];
-		if ((newPredecessor == nil) || (newPredecessor == newParent))
+		if ((newPredecessor == nil) || (newPredecessor == newParent)) {
 			newPredecessorId = 0;
+		}
 		NSInteger newChildIndex = (newPredecessorId > 0) ? ([newParent indexOfChild:newPredecessor] + 1) : 0;
         
 		if (newParentId == oldParentId)
@@ -1326,8 +1349,9 @@
 		}
 		else
 		{
-			if (!newParent.canHaveChildren)
+			if (!newParent.canHaveChildren) {
 				[newParent setCanHaveChildren:YES];
+			}
 			if ([dbManager setParent:newParentId forFolder:folderId])
 			{
 				if (sync && folder.type == VNAFolderTypeOpenReader)
@@ -1343,21 +1367,24 @@
 					}
 				}
 			}
-			else
+			else {
 				continue;
+			}
 		}
 		
 		if (!autoSort)
 		{
 			if (oldPredecessorId > 0)
 			{
-				if (![dbManager setNextSibling:folder.nextSiblingId forFolder:oldPredecessorId])
+				if (![dbManager setNextSibling:folder.nextSiblingId forFolder:oldPredecessorId]) {
 					continue;
+				}
 			}
 			else
 			{
-				if (![dbManager setFirstChild:folder.nextSiblingId forFolder:oldParentId])
+				if (![dbManager setFirstChild:folder.nextSiblingId forFolder:oldParentId]) {
 					continue;
+				}
 			}
 		}
 		
@@ -1382,8 +1409,9 @@
 			else
 			{
 				NSInteger oldFirstChildId = (newParent == self.rootNode) ? dbManager.firstFolderId : newParent.folder.firstChildId;
-				if (![dbManager setNextSibling:oldFirstChildId forFolder:folderId])
+				if (![dbManager setNextSibling:oldFirstChildId forFolder:folderId]) {
 					continue;
+				}
 				[dbManager setFirstChild:folderId forFolder:newParentId];
 			}
 		}
@@ -1410,8 +1438,9 @@
 		if (newParentId != VNAFolderTypeRoot)
 		{
 			TreeNode * parentNode = [self.rootNode nodeFromID:newParentId];
-			if (![self.outlineView isItemExpanded:parentNode] && [self.outlineView isExpandable:parentNode])
+			if (![self.outlineView isItemExpanded:parentNode] && [self.outlineView isExpandable:parentNode]) {
 				[self.outlineView expandItem:parentNode];
+			}
 		}
 	}
 	
@@ -1442,8 +1471,9 @@
 	TreeNode * node = targetItem ? (TreeNode *)targetItem : self.rootNode;
 
 	NSInteger parentId = node.nodeId;
-	if ((childIndex == NSOutlineViewDropOnItemIndex) || (childIndex < 0))
+	if ((childIndex == NSOutlineViewDropOnItemIndex) || (childIndex < 0)) {
 		childIndex = 0;
+	}
 
 	// Check the type
 	if ([type isEqualToString:NSPasteboardTypeString])
@@ -1473,8 +1503,9 @@
 			// Don't allow the trash folder to move under a group folder, because the group folder could get deleted.
 			// Also, don't allow perverse moves.  We should probably do additional checking: not only whether the new parent
 			// is the folder itself but also whether the new parent is a subfolder.
-			if (((folderId == trashFolderId) && (node != self.rootNode)) || (folderId == parentId) || (folderId == predecessorId))
+			if (((folderId == trashFolderId) && (node != self.rootNode)) || (folderId == parentId) || (folderId == predecessorId)) {
 				continue;
+			}
 			[array addObject:@(folderId)];
 			[array addObject:@(parentId)];
 			[array addObject:@(predecessorId)];
@@ -1522,12 +1553,14 @@
 		}
 
 		// If parent was a group, expand it now
-		if (parentId != VNAFolderTypeRoot)
+		if (parentId != VNAFolderTypeRoot) {
 			[self.outlineView expandItem:[self.rootNode nodeFromID:parentId]];
+		}
 		
 		// Select a new folder
-		if (folderToSelect > 0)
+		if (folderToSelect > 0) {
 			[self selectFolder:folderToSelect];
+		}
 		
 		return YES;
 	}
@@ -1546,8 +1579,9 @@
 			NSString * feedTitle = arrayOfTitles[index];
 			NSString * feedURL = arrayOfURLs[index];
 			NSURL * draggedURL = [NSURL URLWithString:feedURL];
-			if ((draggedURL.scheme != nil) && [draggedURL.scheme isEqualToString:@"feed"])
+			if ((draggedURL.scheme != nil) && [draggedURL.scheme isEqualToString:@"feed"]) {
 				feedURL = [NSString stringWithFormat:@"http:%@", draggedURL.resourceSpecifier];
+			}
 			
 			if ([dbManager folderFromFeedURL:feedURL] == nil)
 			{
@@ -1561,12 +1595,14 @@
 		}
 		
 		// If parent was a group, expand it now
-		if (parentId != VNAFolderTypeRoot)
+		if (parentId != VNAFolderTypeRoot) {
 			[self.outlineView expandItem:[self.rootNode nodeFromID:parentId]];
+		}
 		
 		// Select a new folder
-		if (folderToSelect > 0)
+		if (folderToSelect > 0) {
 			[self selectFolder:folderToSelect];
+		}
 		
 		return YES;
 	}

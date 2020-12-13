@@ -40,8 +40,9 @@
 -(void)fixupRelativeImgTags:(NSString *)baseURL
 {
 	baseURL = [NSString stringByCleaningURLString:baseURL];
-	if (baseURL == nil)
+	if (baseURL == nil) {
 		return;
+	}
 	NSURL * imgBaseURL = [NSURL URLWithString:baseURL];
 	
 	NSUInteger textLength = self.length;
@@ -81,8 +82,9 @@
             // Start searching again from beyond the URL
             srchRange.location = srcRange.location + srcPath.length;
         }
-        else
+        else {
             ++srchRange.location;
+        }
         srchRange.length = textLength - srchRange.location;
     }
 }
@@ -94,8 +96,9 @@
 -(void)fixupRelativeAnchorTags:(NSString *)baseURL
 {
 	baseURL = [NSString stringByCleaningURLString:baseURL];
-	if (baseURL == nil)
+	if (baseURL == nil) {
 		return;
+	}
 	NSURL * anchorBaseURL = [NSURL URLWithString:baseURL];
 
 	NSUInteger textLength = self.length;
@@ -135,8 +138,9 @@
 			// Start searching again from beyond the URL
 			srchRange.location = srcRange.location + srcPath.length;
 		}
-		else
+		else {
 			++srchRange.location;
+		}
 		srchRange.length = textLength - srchRange.location;
 	}
 }
@@ -148,8 +152,9 @@
 -(void)fixupRelativeIframeTags:(NSString *)baseURL
 {
 	baseURL = [NSString stringByCleaningURLString:baseURL];
-	if (baseURL == nil)
+	if (baseURL == nil) {
 		return;
+	}
 	NSURL * imgBaseURL = [NSURL URLWithString:baseURL];
 
 	NSUInteger textLength = self.length;
@@ -189,8 +194,9 @@
 			// Start searching again from beyond the URL
 			srchRange.location = srcRange.location + srcPath.length;
 		}
-		else
+		else {
 			++srchRange.location;
+		}
 		srchRange.length = textLength - srchRange.location;
 	}
 }
@@ -213,14 +219,15 @@ static NSMutableDictionary * entityMap = nil;
 	while (index < count)
 	{
 		unichar ch = [self characterAtIndex:index];
-		if (ch >= '0' && ch <= '9')
+		if (ch >= '0' && ch <= '9') {
 			intValue = (intValue * 16) + (ch - '0');
-		else if (ch >= 'A' && ch <= 'F')
+		} else if (ch >= 'A' && ch <= 'F') {
 			intValue = (intValue * 16) + (ch - 'A' + 10);
-		else if (ch >= 'a' && ch <= 'f')
+		} else if (ch >= 'a' && ch <= 'f') {
 			intValue = (intValue * 16) + (ch - 'a' + 10);
-		else
+		} else {
 			break;
+		}
 		++index;
 	}
 	return intValue;
@@ -349,8 +356,9 @@ static NSMutableDictionary * entityMap = nil;
 		unichar ch = [string characterAtIndex:index];
 		if (ch == '\r' || ch == '\n' || ch == '\t')
 		{
-			if (!isInWhitespace)
+			if (!isInWhitespace) {
 				[string replaceCharactersInRange:NSMakeRange(index, 1) withString:@" "];
+			}
 			ch = ' ';
 		}
 		if (ch == ' ' && isInWhitespace)
@@ -414,10 +422,12 @@ static NSMutableDictionary * entityMap = nil;
 	NSInteger index = newString.length - 1;
 	NSInteger newIndex = 0;
 
-	if (index >= 0 && [newString characterAtIndex:index] != '/')
+	if (index >= 0 && [newString characterAtIndex:index] != '/') {
 		[newString appendString:@"/"];
-	if (newComponent.length > 0 && [newComponent characterAtIndex:0] == '/')
+	}
+	if (newComponent.length > 0 && [newComponent characterAtIndex:0] == '/') {
 		++newIndex;
+	}
 	[newString appendString:[newComponent substringFromIndex:newIndex]];
 	return newString;
 }
@@ -435,10 +445,9 @@ static NSMutableDictionary * entityMap = nil;
 	while (index < length)
 	{
 		unichar ch = [escapedString characterAtIndex:index];
-		if (ch <= 127)
+		if (ch <= 127) {
 			++index;
-		else
-		{
+		} else {
 			NSString * escapedCharacter = [NSString stringWithFormat:@"&#%d;", ch];
 			[escapedString replaceCharactersInRange:NSMakeRange(index, 1) withString:escapedCharacter];
 			index += escapedCharacter.length;
@@ -598,10 +607,11 @@ static NSMutableDictionary * entityMap = nil;
 	if (entityString.length > 1 && [entityString characterAtIndex:0] == '#')
 	{
 		NSInteger intValue;
-		if ([entityString characterAtIndex:1] == 'x')
+		if ([entityString characterAtIndex:1] == 'x') {
 			intValue = [entityString substringFromIndex:2].hexValue;
-		else
+		} else {
 			intValue = [entityString substringFromIndex:1].integerValue;
+		}
 		return [NSString stringWithFormat:@"%C", (unsigned short)MAX(intValue, ' ')];
 	}
 	
@@ -618,12 +628,14 @@ static NSMutableDictionary * entityMap = nil;
 	NSUInteger length = self.length;
 	NSUInteger index;
 
-	if (startIndex < length - 1)
+	if (startIndex < length - 1) {
 		for (index = startIndex; index < length; ++index)
 		{
-			if ([self characterAtIndex:index] == ch)
+			if ([self characterAtIndex:index] == ch) {
 				return index;
+			}
 		}
+	}
 	return NSNotFound;
 }
 

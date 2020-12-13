@@ -111,10 +111,11 @@
 {
     NSInteger countExported = 0;
     NSArray * folders;
-	if (selectionFlag)
-	    folders = foldersTree.selectedFolders;
-	else
-	    folders = [foldersTree children:0];
+	if (selectionFlag) {
+		folders = foldersTree.selectedFolders;
+	} else {
+		folders = [foldersTree children:0];
+	}
     NSXMLDocument *opmlDocument = [Export opmlDocumentFromFolders:folders inFoldersTree:foldersTree withGroups:groupFlag exportCount:&countExported];
     	// Now write the complete XML to the file
     

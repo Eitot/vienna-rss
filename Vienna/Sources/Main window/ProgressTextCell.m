@@ -69,8 +69,9 @@
 -(void)setInProgress:(BOOL)newInProgress forRow:(NSInteger)row
 {
 	inProgress = newInProgress;
-	if (inProgress)
+	if (inProgress) {
 		progressRow = row;
+	}
 	currentRow = row;
 }
 

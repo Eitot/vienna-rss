@@ -97,8 +97,9 @@
  */
 -(void)addToQueue:(NSInteger)folderId guid:(NSString *)guid
 {
-	while (queueIndex + 1 < (NSInteger)array.count)
+	while (queueIndex + 1 < (NSInteger)array.count) {
 		[array removeObjectAtIndex:queueIndex + 1];
+	}
 	if (array.count == maxItems)
 	{
 		[array removeObjectAtIndex:0];
@@ -107,8 +108,9 @@
 	if (array.count > 0)
 	{
 		ArticleReference * item = array[array.count - 1];
-		if ([item.guid isEqualToString:guid] && item.folderId == folderId)
+		if ([item.guid isEqualToString:guid] && item.folderId == folderId) {
 			return;
+		}
 	}
 	[array addObject:[ArticleReference makeReferenceFromGUID:guid inFolder:folderId]];
 	++queueIndex;

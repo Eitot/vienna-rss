@@ -98,8 +98,9 @@
 		{
 			// A series of control characters suggest a corrupted feed so bail
 			// out now if this happens.
-			if (++cntrlCharCount == 10)
+			if (++cntrlCharCount == 10) {
 				break;
+			}
 		}
 		else if (*textPtr == '<' && !inTag && !inQuote)
 		{
@@ -122,15 +123,18 @@
 				NSMutableDictionary * tagDict = [[NSMutableDictionary alloc] init];
 				const char * tagEndPtr = tagStartPtr;
 
-				if (*tagEndPtr == '/')
+				if (*tagEndPtr == '/') {
 					++tagEndPtr;
-				while (isalpha(*tagEndPtr))
+				}
+				while (isalpha(*tagEndPtr)) {
 					++tagEndPtr;
+				}
 				NSString * tagName = [[NSString alloc] initWithBytes:tagStartPtr length:(tagEndPtr - tagStartPtr) encoding:NSASCIIStringEncoding];
 				[tag setName:tagName.lowercaseString];
 				
-				while (isspace(*tagEndPtr))
+				while (isspace(*tagEndPtr)) {
 					++tagEndPtr;
+				}
 				
 				// Now gather all attributes
 				while (*tagEndPtr && *tagEndPtr != '>')
@@ -144,17 +148,21 @@
 					
 					// Get the attribute name
 					tagStartPtr = tagEndPtr;
-					while (isalpha(*tagEndPtr))
+					while (isalpha(*tagEndPtr)) {
 						++tagEndPtr;
+					}
 					NSString * attrName = [[NSString alloc] initWithBytes:tagStartPtr length:(tagEndPtr - tagStartPtr) encoding:NSASCIIStringEncoding].lowercaseString;
 
 					// Skip the '=' and any whitespaces between the name and the value
-					while (isspace(*tagEndPtr))
+					while (isspace(*tagEndPtr)) {
 						++tagEndPtr;
-					if (*tagEndPtr == '=')
+					}
+					if (*tagEndPtr == '=') {
 						++tagEndPtr;
-					while (isspace(*tagEndPtr))
+					}
+					while (isspace(*tagEndPtr)) {
 						++tagEndPtr;
+					}
 
 					// Get the attribute value. This is everything up to the end of the tag or the
 					// first space outside of quotes.
@@ -162,10 +170,12 @@
 					BOOL inQuote = NO;
 					while (*tagEndPtr)
 					{
-						if ((*tagEndPtr == ' ' || *tagEndPtr == '>' || *tagEndPtr == '/') && !inQuote)
+						if ((*tagEndPtr == ' ' || *tagEndPtr == '>' || *tagEndPtr == '/') && !inQuote) {
 							break;
-						if (*tagEndPtr == '"')
+						}
+						if (*tagEndPtr == '"') {
 							inQuote = !inQuote;
+						}
 						++tagEndPtr;
 					}
 					NSString * attrValue = [[NSString alloc] initWithBytes:tagStartPtr length:(tagEndPtr - tagStartPtr) encoding:NSASCIIStringEncoding];
@@ -175,8 +185,9 @@
 						[tagDict setValue:attrValue forKey:attrName];
 					}
 
-					while (isspace(*tagEndPtr))
+					while (isspace(*tagEndPtr)) {
 						++tagEndPtr;
+					}
 				}
 
 				[tag setAttributes:tagDict];

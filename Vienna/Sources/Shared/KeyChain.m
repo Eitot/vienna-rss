@@ -34,10 +34,9 @@
 	SecProtocolType protocolType = ([secureUrl.scheme caseInsensitiveCompare:@"https"] == NSOrderedSame) ? kSecProtocolTypeHTTPS : kSecProtocolTypeHTTP;
 	NSString * thePassword;
 
-	if (!cServiceName || !cUsername)
+	if (!cServiceName || !cUsername) {
 		thePassword = @"";
-	else
-	{
+	} else {
 		const char * cPath = "";
 		UInt32 passwordLength;
 		void * passwordPtr;
@@ -58,9 +57,9 @@
 												 &passwordLength,
 												 &passwordPtr,
 												 NULL);
-		if (status != noErr)
+		if (status != noErr) {
 			thePassword = @"";
-		else
+		} else
 		{
 			thePassword = [[NSString alloc] initWithBytes:passwordPtr length:passwordLength encoding:NSUTF8StringEncoding];
 			SecKeychainItemFreeContent(NULL, passwordPtr);
@@ -84,8 +83,9 @@
 	SecKeychainItemRef itemRef;
 	OSStatus status;
 	
-	if (!cServiceName || !cUsername || !cPassword)
+	if (!cServiceName || !cUsername || !cPassword) {
 		return;
+	}
 	status = SecKeychainFindInternetPassword(NULL,
 											 (UInt32)strlen(cServiceName),
 											 cServiceName,
@@ -101,8 +101,9 @@
 											 NULL,
 											 NULL,
 											 &itemRef);
-	if (status == noErr)
+	if (status == noErr) {
 		SecKeychainItemDelete(itemRef);
+	}
 	SecKeychainAddInternetPassword(NULL,
 								   (UInt32)strlen(cServiceName),
 								   cServiceName,
@@ -132,10 +133,9 @@
 	SecProtocolType protocolType = kSecProtocolTypeHTTPS ;
 	NSString * thePassword;
 
-	if (!cServiceName || !cUsername)
+	if (!cServiceName || !cUsername) {
 		thePassword = @"";
-	else
-	{
+	} else {
 		const char * cPath = "";
 		UInt32 passwordLength;
 		void * passwordPtr;
@@ -156,10 +156,9 @@
 												 &passwordLength,
 												 &passwordPtr,
 												 NULL);
-		if (status != noErr)
+		if (status != noErr) {
 			thePassword = @"";
-		else
-		{
+		} else {
 			thePassword = [[NSString alloc] initWithBytes:passwordPtr length:passwordLength encoding:NSUTF8StringEncoding];
 			SecKeychainItemFreeContent(NULL, passwordPtr);
 		}
@@ -176,10 +175,9 @@
 	const char * cUsername = username.UTF8String;
 	NSString * thePassword;
 
-	if (!cServiceName || !cUsername)
+	if (!cServiceName || !cUsername) {
 		thePassword = @"";
-	else
-	{
+	} else {
 		UInt32 passwordLength;
 		void * passwordPtr;
 		OSStatus status;
@@ -192,10 +190,9 @@
 											 &passwordLength,
 											 &passwordPtr,
 											 NULL);
-		if (status != noErr)
+		if (status != noErr) {
 			thePassword = @"";
-		else
-		{
+		} else {
 			thePassword = [[NSString alloc] initWithBytes:passwordPtr length:passwordLength encoding:NSUTF8StringEncoding];
 			SecKeychainItemFreeContent(NULL, passwordPtr);
 		}
@@ -213,8 +210,9 @@
 	SecKeychainItemRef itemRef;
 	OSStatus status;
 
-	if (!cServiceName || !cUsername)
+	if (!cServiceName || !cUsername) {
 		return;
+	}
 	status = SecKeychainFindGenericPassword(NULL,
 											 (UInt32)strlen(cServiceName),
 											 cServiceName,
@@ -223,8 +221,9 @@
 											 NULL,
 											 NULL,
 											 &itemRef);
-	if (status == noErr)
+	if (status == noErr) {
 		SecKeychainItemDelete(itemRef);
+	}
 }
 
 /* setGenericPasswordInKeychain
@@ -236,8 +235,9 @@
 	const char * cUsername = username.UTF8String;
 	const char * cPassword = password.UTF8String;
 
-	if (!cServiceName || !cUsername || !cPassword)
+	if (!cServiceName || !cUsername || !cPassword) {
 		return;
+	}
 
 	[self deleteGenericPasswordInKeychain:username service:service];
 	SecKeychainAddGenericPassword(NULL,

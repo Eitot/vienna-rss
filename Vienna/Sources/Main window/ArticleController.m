@@ -254,8 +254,9 @@
  */
 -(NSString *)searchPlaceholderString
 {
-	if (currentFolderId == -1)
+	if (currentFolderId == -1) {
 		return @"";
+	}
 
 	Folder * folder = [[Database sharedManager] folderFromID:currentFolderId];
 	return [NSString stringWithFormat:NSLocalizedString(@"Filter in %@", nil), folder.name];
@@ -285,20 +286,18 @@
 	Preferences * prefs = [Preferences standardPreferences];
 	NSMutableArray * descriptors = [NSMutableArray arrayWithArray:prefs.articleSortDescriptors];
 	
-	if ([sortColumnIdentifier isEqualToString:columnName])
+	if ([sortColumnIdentifier isEqualToString:columnName]) {
 		descriptors[0] = [descriptors[0] reversedSortDescriptor];
-	else
-	{
+	} else {
 		[self setSortColumnIdentifier:columnName];
 		[prefs setObject:sortColumnIdentifier forKey:MAPref_SortColumn];
 		NSSortDescriptor * sortDescriptor;
 		NSDictionary * specifier = [articleSortSpecifiers valueForKey:sortColumnIdentifier];
 		NSUInteger index = [[descriptors valueForKey:@"key"] indexOfObject:[specifier valueForKey:@"key"]];
 
-		if (index == NSNotFound)
+		if (index == NSNotFound) {
 			sortDescriptor = [[NSSortDescriptor alloc] initWithKey:[specifier valueForKey:@"key"] ascending:YES selector:NSSelectorFromString([specifier valueForKey:@"selector"])];
-		else
-		{
+		} else {
 			sortDescriptor = descriptors[index];
 			[descriptors removeObjectAtIndex:index];
 		}
@@ -670,10 +669,9 @@
 	for (Article * theArticle in articleArray)
 	{
 		[[Database sharedManager] markArticleDeleted:theArticle isDeleted:deleteFlag];
-		if (![currentArrayOfArticles containsObject:theArticle])
+		if (![currentArrayOfArticles containsObject:theArticle]) {
 			needReload = YES;
-		else if (deleteFlag && (currentFolderId != [Database sharedManager].trashFolderId))
-		{
+		} else if (deleteFlag && (currentFolderId != [Database sharedManager].trashFolderId)) {
 			[currentArrayCopy removeObject:theArticle];
 			[folderArrayCopy removeObject:theArticle];
 		}
@@ -682,16 +680,16 @@
 			[currentArrayCopy removeObject:theArticle];
 			[folderArrayCopy removeObject:theArticle];
 		}
-		else
+		else {
 			needReload = YES;
+		}
 	}
 
 	self.currentArrayOfArticles = currentArrayCopy;
 	self.folderArrayOfArticles = folderArrayCopy;
-	if (needReload)
+	if (needReload) {
 		[self reloadArrayOfArticles];
-	else
-	{
+	} else {
 		[mainArticleView refreshFolder:VNARefreshRedrawList];
 		if (currentArrayOfArticles.count > 0u)
 		{
@@ -1059,8 +1057,9 @@
  */
 -(void)addBacktrack:(NSString *)guid
 {
-	if (!isBacktracking)
+	if (!isBacktracking) {
 		[backtrackArray addToQueue:currentFolderId guid:guid];
+	}
 }
 
 /* goForward

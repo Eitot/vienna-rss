@@ -90,8 +90,9 @@
 	while (index >= 0)
 	{
 		DownloadItem * item = downloadsList[index--];
-		if (item.state != DownloadStateStarted)
+		if (item.state != DownloadStateStarted) {
 			[downloadsList removeObject:item];
+		}
 	}
 	[self notifyDownloadItemChange:nil];
 	[self archiveDownloadsList];
@@ -180,8 +181,9 @@
 	while (index >= 0)
 	{
 		DownloadItem * item = downloadsList[index--];
-		if (item.download == download)
+		if (item.download == download) {
 			return item;
+		}
 	}
 	return nil;
 }
@@ -197,8 +199,9 @@
 	NSFileManager * fileManager = [NSFileManager defaultManager];
 	BOOL isDir = YES;
 
-	if (![fileManager fileExistsAtPath:downloadPath isDirectory:&isDir] || !isDir)
+	if (![fileManager fileExistsAtPath:downloadPath isDirectory:&isDir] || !isDir) {
 		downloadPath = @"~/Desktop";
+	}
 	
 	return [downloadPath.stringByExpandingTildeInPath stringByAppendingPathComponent:filename];
 }
@@ -222,8 +225,9 @@
 		
 		if ([firstFile compare:secondFile options:NSCaseInsensitiveSearch] == NSOrderedSame)
 		{
-			if (item.state != DownloadStateCompleted)
+			if (item.state != DownloadStateCompleted) {
 				return NO;
+			}
 			
 			// File completed download but possibly moved or deleted after download
 			// so check the file system.
@@ -255,8 +259,9 @@
 		[downloadsList addObject:theItem];
 	}
     theItem.state = DownloadStateStarted;
-	if (theItem.filename == nil)
+	if (theItem.filename == nil) {
 		theItem.filename = download.request.URL.path;
+	}
 
 	// Keep count of active downloads
 	++activeDownloads;
@@ -365,10 +370,12 @@
  */
 -(BOOL)download:(NSURLDownload *)download shouldDecodeSourceDataOfMIMEType:(NSString *)encodingType
 {
-	if ([encodingType isEqualToString:@"application/macbinary"])
+	if ([encodingType isEqualToString:@"application/macbinary"]) {
 		return YES;
-	if ([encodingType isEqualToString:@"application/mac-binhex40"])
+	}
+	if ([encodingType isEqualToString:@"application/mac-binhex40"]) {
 		return YES;
+	}
 	return NO;
 }
 
@@ -385,8 +392,9 @@
 	// Hack for certain compression types that are converted to .txt extension when
 	// downloaded. SITX is the only one I know about.
 	DownloadItem * theItem = [self itemForDownload:download];
-	if ([theItem.filename.pathExtension isEqualToString:@"sitx"] && [filename.pathExtension isEqualToString:@"txt"])
+	if ([theItem.filename.pathExtension isEqualToString:@"sitx"] && [filename.pathExtension isEqualToString:@"txt"]) {
 		destPath = destPath.stringByDeletingPathExtension;
+	}
 
 	// Save the filename
 	[download setDestination:destPath allowOverwrite:NO];

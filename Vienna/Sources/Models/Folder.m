@@ -86,7 +86,7 @@ static NSArray * iconArray = nil;
  * Return the internal array of pre-defined folder images
  */
 +(NSArray<NSImage *> *)_iconArray {
-	if (iconArray == nil)
+	if (iconArray == nil) {
 		iconArray = @[
 					  [NSImage imageNamed:@"smallFolder"],
 					  [NSImage imageNamed:@"smartFolder"],
@@ -96,6 +96,7 @@ static NSArray * iconArray = nil;
 					  [NSImage imageNamed:@"searchFolder"],
 					  [NSImage imageNamed:@"googleFeed"],
 					  ];
+	}
 	return iconArray;
 }
 
@@ -266,8 +267,9 @@ static NSArray * iconArray = nil;
 {
 	if (!self.hasPassword)
 	{
-		if (self.username != nil && self.feedURL != nil)
+		if (self.username != nil && self.feedURL != nil) {
 			[self.attributes setValue:[KeyChain getPasswordFromKeychain:self.username url:self.feedURL] forKey:@"Password"];
+		}
 		self.hasPassword = YES;
 	}
 	return [self.attributes valueForKey:@"Password"];
@@ -278,8 +280,9 @@ static NSArray * iconArray = nil;
  */
 -(void)setPassword:(NSString *)newPassword
 {
-	if (self.username != nil && self.feedURL != nil)
+	if (self.username != nil && self.feedURL != nil) {
 		[KeyChain setPasswordInKeychain:newPassword username:self.username url:self.feedURL];
+	}
 	[self.attributes setValue:newPassword forKey:@"Password"];
 	self.hasPassword = YES;
 }
@@ -486,10 +489,9 @@ static NSArray * iconArray = nil;
 
     if (existingArticle == nil)
     {
-        if ([guidHistory containsObject:articleGuid])
+        if ([guidHistory containsObject:articleGuid]) {
             return NO; // Article has been deleted and removed from database, so ignore
-        else
-        {
+        } else {
             // add the article as new
             BOOL success = [[Database sharedManager] addArticle:article toFolder:self.itemId];
             if(success)
@@ -499,11 +501,13 @@ static NSArray * iconArray = nil;
                 NSString * guid = article.guid;
 	            [self.cachedArticles setObject:article forKey:[NSString stringWithString:guid]];
 	            [self.cachedGuids addObject:guid];
-                if(!article.read)
+                if(!article.read) {
                     adjustment = 1;
+                }
             }
-            else
+            else {
                 return NO;
+            }
         }
     }
     else if (existingArticle.deleted)
@@ -667,8 +671,9 @@ static NSArray * iconArray = nil;
         {
             [article markRead:YES];
             count--;
-            if (count == 0)
+            if (count == 0) {
                 break;
+            }
         }
     }
   } // synchronized
@@ -692,14 +697,16 @@ static NSArray * iconArray = nil;
             {
                 [result addObject:[ArticleReference makeReference:article]];
                 count--;
-                if (count == 0)
+                if (count == 0) {
                     break;
+                }
             }
         }
         return [result copy];
     }
-    else
+    else {
         return [[Database sharedManager] arrayOfUnreadArticlesRefs:self.itemId];
+    }
   } // synchronized
 }
 
@@ -781,8 +788,12 @@ static NSArray * iconArray = nil;
  */
 -(NSComparisonResult)folderIDCompare:(Folder *)otherObject
 {
-	if (self.itemId > otherObject.itemId) return NSOrderedAscending;
-	if (self.itemId < otherObject.itemId) return NSOrderedDescending;
+	if (self.itemId > otherObject.itemId) {
+		return NSOrderedAscending;
+	}
+	if (self.itemId < otherObject.itemId) {
+		return NSOrderedDescending;
+	}
 	return NSOrderedSame;
 }
 

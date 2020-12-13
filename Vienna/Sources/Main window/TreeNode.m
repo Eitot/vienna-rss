@@ -75,8 +75,9 @@
 			TreeNode * theChild = children[insertIndex];
 			if (sortMethod == VNAFolderSortByName)
 			{
-				if ([child folderNameCompare:theChild] == NSOrderedAscending)
+				if ([child folderNameCompare:theChild] == NSOrderedAscending) {
 					break;
+				}
 			}
 			else
 			{
@@ -85,8 +86,9 @@
 			++insertIndex;
 		}
 	}
-	else if ((insertIndex < 0) || (insertIndex > count))
+	else if ((insertIndex < 0) || (insertIndex > count)) {
 		insertIndex = count;
+	}
 	
 	child.parentNode = self;
 	[children insertObject:child atIndex:insertIndex];
@@ -98,8 +100,9 @@
  */
 -(void)removeChild:(TreeNode *)child andChildren:(BOOL)removeChildrenFlag
 {
-	if (removeChildrenFlag)
+	if (removeChildrenFlag) {
 		[child removeChildren];
+	}
 	[children removeObject:child];
 }
 
@@ -155,15 +158,17 @@
  */
 -(TreeNode *)nodeFromID:(NSInteger)n
 {
-	if (self.nodeId == n)
+	if (self.nodeId == n) {
 		return self;
+	}
 	
 	TreeNode * theNode;
 	
 	for (TreeNode * node in children)
 	{
-		if ((theNode = [node nodeFromID:n]) != nil)
+		if ((theNode = [node nodeFromID:n]) != nil) {
 			return theNode;
+		}
 	}
 	return nil;
 }
@@ -175,8 +180,9 @@
 {
 	for (TreeNode * node in children)
 	{
-		if ([childName isEqual:node.nodeName])
+		if ([childName isEqual:node.nodeName]) {
 			return node;
+		}
 	}
 	return nil;
 }
@@ -220,8 +226,9 @@
 -(TreeNode *)nextSibling
 {
 	NSInteger childIndex = [parentNode indexOfChild:self];
-	if (childIndex == NSNotFound || ++childIndex >= parentNode.countOfChildren)
+	if (childIndex == NSNotFound || ++childIndex >= parentNode.countOfChildren) {
 		return nil;
+	}
 	return [parentNode childByIndex:childIndex];
 }
 
@@ -230,8 +237,9 @@
  */
 -(TreeNode *)firstChild
 {
-	if (children.count == 0)
+	if (children.count == 0) {
 		return nil;
+	}
 	return children[0];
 }
 

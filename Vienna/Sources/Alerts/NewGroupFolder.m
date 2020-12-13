@@ -70,8 +70,9 @@
 	[newGroupFolderWindow.sheetParent endSheet:newGroupFolderWindow];
 	[newGroupFolderWindow orderOut:self];
 	
-	if (newFolderId != -1)
+	if (newFolderId != -1) {
 		[APPCONTROLLER selectFolder:newFolderId];
+	}
 }
 
 /* doCancel

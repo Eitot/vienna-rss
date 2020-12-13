@@ -60,8 +60,9 @@ static Preferences * _standardPreferences = nil;
  */
 +(Preferences *)standardPreferences
 {
-	if (_standardPreferences == nil)
+	if (_standardPreferences == nil) {
 		_standardPreferences = [[Preferences alloc] init];
+	}
 	return _standardPreferences;
 }
 
@@ -90,16 +91,18 @@ static Preferences * _standardPreferences = nil;
 			if ([argName.lowercaseString isEqualToString:@"-profile"])
 			{
 				NSString * argValue = [enumerator nextObject];
-				if (argValue == nil || [argValue isEqualToString:@"default"])
+				if (argValue == nil || [argValue isEqualToString:@"default"]) {
 					break;
+				}
 				profilePath = argValue;
 				break;
 			}
 		}
 		
 		// Look to see if there's a cached profile path from the updater
-		if (profilePath == nil)
+		if (profilePath == nil) {
 			profilePath = [[NSUserDefaults standardUserDefaults] stringForKey:MAPref_Profile_Path];
+		}
 		[[NSUserDefaults standardUserDefaults] removeObjectForKey:MAPref_Profile_Path];
 		
 		// Merge in the user preferences from the defaults.
@@ -144,9 +147,10 @@ static Preferences * _standardPreferences = nil;
 				preferencesPath = [preferencesPath stringByAppendingString:@".plist"];
 			}
 			userPrefs = [[NSMutableDictionary alloc] initWithDictionary:defaults];
-			if (preferencesPath != nil)
+			if (preferencesPath != nil) {
 				[userPrefs addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:preferencesPath]];
-            
+			}
+
 			// Other folders are local to the profilePath
 			defaultDatabase = [profilePath stringByAppendingPathComponent:MA_Database_Name];
 			imagesFolder = [profilePath stringByAppendingPathComponent:MA_ImagesFolder_Name].stringByExpandingTildeInPath;
@@ -299,12 +303,12 @@ static Preferences * _standardPreferences = nil;
  */
 -(void)savePreferences
 {
-	if (preferencesPath == nil)
+	if (preferencesPath == nil) {
 		[userPrefs synchronize];
-	else
-	{
-		if (![userPrefs writeToFile:preferencesPath atomically:NO])
+	} else {
+		if (![userPrefs writeToFile:preferencesPath atomically:NO]) {
 			NSLog(@"Failed to update preferences to %@", preferencesPath);
+		}
 	}
 }
 
@@ -878,8 +882,9 @@ static Preferences * _standardPreferences = nil;
 	{
 		displayStyle = newStyleName;
 		[self setString:displayStyle forKey:MAPref_ActiveStyleName];
-		if (flag)
+		if (flag) {
 			[[NSNotificationCenter defaultCenter] postNotificationName:@"MA_Notify_StyleChange" object:nil];
+		}
 	}
 }
 

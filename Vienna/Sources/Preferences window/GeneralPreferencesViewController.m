@@ -164,10 +164,12 @@
             if (appURL.fileURL && [appURL.path hasPrefix:@"/Applications/"])
             {
                 NSString * appName = [[NSFileManager defaultManager] displayNameAtPath:appURL.path];
-                if ([appName isEqualToString:ourAppName])
+                if ([appName isEqualToString:ourAppName]) {
                     onTheList = YES;
-                if (appName != nil && ![appName isEqualToString:regAppName])
+                }
+                if (appName != nil && ![appName isEqualToString:regAppName]) {
                     [linksHandler addItemWithTitle:appName image:[[NSWorkspace sharedWorkspace] iconForFile:appURL.path]];
+                }
                 
                 [appToPathMap setValue:appURL forKey:appName];
             }
@@ -200,8 +202,9 @@
 -(IBAction)changeExpireDuration:(id)sender
 {
     NSMenuItem * selectedItem = expireDuration.selectedItem;
-    if (selectedItem != nil)
+    if (selectedItem != nil) {
         [Preferences standardPreferences].autoExpireDuration = selectedItem.tag;
+    }
 }
 
 /* changeOpenLinksInBackground
@@ -263,8 +266,9 @@
             [self updateDownloadsPopUp:downloadFolderPath];
         }
         
-        if (returnCode == NSModalResponseCancel)
+        if (returnCode == NSModalResponseCancel) {
             [self->downloadFolder selectItemAtIndex:0];
+        }
     }];
 }
 
@@ -328,8 +332,9 @@
         NSWindow * prefPaneWindow = self->linksHandler.window;
         [prefPaneWindow makeKeyAndOrderFront:self];
         
-        if (returnCode == NSModalResponseOK)
+        if (returnCode == NSModalResponseOK) {
             [self setDefaultLinksHandler:panel.URL];
+        }
         [self refreshLinkHandler];
     }];
 }

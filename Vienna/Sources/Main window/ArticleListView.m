@@ -215,15 +215,17 @@
 {
 	// If this is an URL link, do the link-specific items.
 	NSURL * urlLink = [element valueForKey:WebElementLinkURLKey];
-	if (urlLink != nil)
+	if (urlLink != nil) {
 		return [self.controller contextMenuItemsForElement:element defaultMenuItems:defaultMenuItems];
+	}
 	
 	// If we have a full HTML page then do the additional web-page specific items.
 	if (isCurrentPageFullHTML)
 	{
 		WebFrame * frameKey = [element valueForKey:WebElementFrameKey];
-		if (frameKey != nil)
+		if (frameKey != nil) {
 			return [self.controller contextMenuItemsForElement:element defaultMenuItems:defaultMenuItems];
+		}
 	}
 	
 	// Remove the reload menu item if we don't have a full HTML page.
@@ -238,22 +240,22 @@
 		for (index = 0; index < count; index++)
 		{
 			NSMenuItem * menuItem = defaultMenuItems[index];
-			if (menuItem.tag != WebMenuItemTagReload)
+			if (menuItem.tag != WebMenuItemTagReload) {
 				[newDefaultMenu addObject:menuItem];
+			}
 		}
 		
 		// If we still have some menu items then use that for the new default menu, otherwise
 		// set the default items to nil as we may have removed all the items.
-		if (newDefaultMenu.count > 0)
+		if (newDefaultMenu.count > 0) {
 			defaultMenuItems = newDefaultMenu;
-		else
-        {
+		} else {
 			defaultMenuItems = nil;
-        }
-    }
+		}
+	}
 
 	// Return the default menu items.
-    return defaultMenuItems;
+	return defaultMenuItems;
 }
 
 /* initTableView
@@ -280,10 +282,12 @@
 		BOOL visible = NO;
 		
 		name = dataArray[index++];
-		if (index < dataArray.count)
+		if (index < dataArray.count) {
 			visible = [dataArray[index++] integerValue] == YES;
-		if (index < dataArray.count)
+		}
+		if (index < dataArray.count) {
 			width = [dataArray[index++] integerValue];
+		}
 		
 		field = [db fieldByName:name];
 		field.visible = visible;
@@ -412,8 +416,9 @@
 	NSMenuItem * contextualMenuItem;
 	NSInteger index;
 	NSMenu * articleListMenu = articleList.menu;
-	if (articleListMenu == nil)
+	if (articleListMenu == nil) {
 		return;
+	}
 	mainMenuItem = menuItemWithAction(@selector(viewSourceHomePageInAlternateBrowser:));
 	if (mainMenuItem != nil)
 	{
@@ -477,15 +482,17 @@
 		
 		// Handle which fields can be visible in the condensed (vertical) layout
 		// versus the report (horizontal) layout
-		if (tableLayout == VNALayoutReport)
+		if (tableLayout == VNALayoutReport) {
 			showField = field.visible && tag != ArticleFieldIDHeadlines && tag != ArticleFieldIDComments;
-		else
+		} else
 		{
 			showField = NO;
-			if (tag == ArticleFieldIDRead || tag == ArticleFieldIDFlagged || tag == ArticleFieldIDHasEnclosure)
+			if (tag == ArticleFieldIDRead || tag == ArticleFieldIDFlagged || tag == ArticleFieldIDHasEnclosure) {
 				showField = field.visible;
-			if (tag == ArticleFieldIDHeadlines)
+			}
+			if (tag == ArticleFieldIDHeadlines) {
 				showField = YES;
+			}
 		}
 
 		// Set column hidden or shown
@@ -503,10 +510,12 @@
 			// in willDisplayCell:forTableColumn:row: where it sets the inProgress flag.
 			// We need to use a different column for condensed layout vs. table layout.
 			BOOL isProgressColumn = NO;
-			if (tableLayout == VNALayoutReport && [column.identifier isEqualToString:MA_Field_Subject])
+			if (tableLayout == VNALayoutReport && [column.identifier isEqualToString:MA_Field_Subject]) {
 				isProgressColumn = YES;
-			if (tableLayout == VNALayoutCondensed && [column.identifier isEqualToString:MA_Field_Headlines])
+			}
+			if (tableLayout == VNALayoutCondensed && [column.identifier isEqualToString:MA_Field_Headlines]) {
 				isProgressColumn = YES;
+			}
 			
 			if (isProgressColumn)
 			{
@@ -582,10 +591,11 @@
 	// Put the selection back
 	[articleList selectRowIndexes:selArray byExtendingSelection:NO];
 	
-	if (tableLayout == VNALayoutReport)
+	if (tableLayout == VNALayoutReport) {
 		articleList.autosaveName = @"Vienna3ReportLayoutColumns";
-	else
+	} else {
 		articleList.autosaveName = @"Vienna3CondensedLayoutColumns";
+	}
 	[articleList setAutosaveTableColumns:YES];
 
 	// Done
@@ -658,21 +668,25 @@
 	CGFloat height = [APPCONTROLLER.layoutManager defaultLineHeightForFont:articleListFont];
 	NSInteger numberOfRowsInCell;
 
-	if (tableLayout == VNALayoutReport)
+	if (tableLayout == VNALayoutReport) {
 		numberOfRowsInCell = 1;
-	else
-	{
+	} else {
 		numberOfRowsInCell = 0;
-		if ([db fieldByName:MA_Field_Subject].visible)
+		if ([db fieldByName:MA_Field_Subject].visible) {
 			++numberOfRowsInCell;
-		if ([db fieldByName:MA_Field_Folder].visible || [db fieldByName:MA_Field_Date].visible || [db fieldByName:MA_Field_Author].visible)
+		}
+		if ([db fieldByName:MA_Field_Folder].visible || [db fieldByName:MA_Field_Date].visible || [db fieldByName:MA_Field_Author].visible) {
 			++numberOfRowsInCell;
-		if ([db fieldByName:MA_Field_Link].visible)
+		}
+		if ([db fieldByName:MA_Field_Link].visible) {
 			++numberOfRowsInCell;
-		if ([db fieldByName:MA_Field_Summary].visible)
+		}
+		if ([db fieldByName:MA_Field_Summary].visible) {
 			++numberOfRowsInCell;
-		if (numberOfRowsInCell == 0)
+		}
+		if (numberOfRowsInCell == 0) {
 			++numberOfRowsInCell;
+		}
 	}
 	articleList.rowHeight = (height + 2.0f) * (CGFloat)numberOfRowsInCell;
 }
@@ -835,8 +849,9 @@
  */
 -(void)handleLoadFullHTMLChange:(NSNotification *)note
 {
-	if (self == self.controller.articleController.mainArticleView)
+	if (self == self.controller.articleController.mainArticleView) {
 		[self refreshArticlePane];
+	}
 }
 
 /* handleReadingPaneChange
@@ -889,8 +904,9 @@
 		NSInteger lastRow = articleList.numberOfRows - 1;
 		NSInteger visibleRow = rowIndex + (pageSize / 2);
 
-		if (visibleRow > lastRow)
+		if (visibleRow > lastRow) {
 			visibleRow = lastRow;
+		}
 		[articleList scrollRowToVisible:visibleRow];
 	}
 }
@@ -910,8 +926,9 @@
  */
 -(BOOL)viewNextUnreadInCurrentFolder:(NSInteger)currentRow
 {
-	if (currentRow < 0)
+	if (currentRow < 0) {
 		currentRow = 0;
+	}
 	
 	NSArray * allArticles = self.controller.articleController.allArticles;
 	NSInteger totalRows = allArticles.count;
@@ -954,8 +971,9 @@
 	if (!result)
 	{
 		NSInteger count = self.controller.articleController.allArticles.count;
-		if (count > 0)
+		if (count > 0) {
 			[self makeRowSelectedAndVisible:0];
+		}
 	}
 	return result;
 }
@@ -1061,12 +1079,13 @@
 	if (theArticle != nil && !theArticle.read)
 	{
 		CGFloat interval = [Preferences standardPreferences].markReadInterval;
-		if (interval > 0 && !isAppInitialising)
+		if (interval > 0 && !isAppInitialising) {
 			markReadTimer = [NSTimer scheduledTimerWithTimeInterval:(double)interval
 															 target:self
 														   selector:@selector(markCurrentRead:)
 														   userInfo:nil
 															repeats:NO];
+		}
 	}
 }
 
@@ -1096,8 +1115,9 @@
  */
 -(void)handleRefreshArticle:(NSNotification *)nc
 {
-	if (self == self.controller.articleController.mainArticleView && !isAppInitialising)
+	if (self == self.controller.articleController.mainArticleView && !isAppInitialising) {
 		[self refreshArticlePane];
+	}
 }
 
 /* clearCurrentURL
@@ -1144,10 +1164,11 @@
  */
 -(NSURL *)url
 {
-	if (isCurrentPageFullHTML)
+	if (isCurrentPageFullHTML) {
 		return currentURL;
-	else 
+	} else { 
 		return nil;
+	}
 }
 
 /* refreshArticlePane
@@ -1210,15 +1231,13 @@
 	
 	// Show the enclosure view if just one article is selected and it has an
 	// enclosure.
-	if (msgArray.count != 1)
+	if (msgArray.count != 1) {
 		[self hideEnclosureView];
-	else
-	{
+	} else {
 		Article * oneArticle = msgArray[0];
-		if (!oneArticle.hasEnclosure)
+		if (!oneArticle.hasEnclosure) {
 			[self hideEnclosureView];
-		else
-		{
+		} else {
 			[self showEnclosureView];
 			[enclosureView setEnclosureFile:oneArticle.enclosure];
 		}
@@ -1256,8 +1275,9 @@
 	NSArray * allArticles = self.controller.articleController.allArticles;
 	Article * theArticle;
 	
-	if(rowIndex < 0 || rowIndex >= allArticles.count)
-	    return nil;
+	if(rowIndex < 0 || rowIndex >= allArticles.count) {
+		return nil;
+	}
 	theArticle = allArticles[rowIndex];
 	NSString * identifier = aTableColumn.identifier;
 	if ([identifier isEqualToString:MA_Field_Read])
@@ -1340,10 +1360,11 @@
 		{
 			NSDictionary * topLineDictPtr;
 
-			if (theArticle.read)
+			if (theArticle.read) {
 				topLineDictPtr = (isSelectedRow ? selectionDict : topLineDict);
-			else
+			} else {
 				topLineDictPtr = (isSelectedRow ? unreadTopLineSelectionDict : unreadTopLineDict);
+			}
 			NSString * topString = [NSString stringWithFormat:@"%@", theArticle.title];
 			NSMutableAttributedString * topAttributedString = [[NSMutableAttributedString alloc] initWithString:topString attributes:topLineDictPtr];
 			[topAttributedString fixFontAttributeInRange:NSMakeRange(0u, topAttributedString.length)];
@@ -1400,11 +1421,13 @@
 		}
 		if ([db fieldByName:MA_Field_Author].visible)
 		{
-			if (!theArticle.author.blank)
+			if (!theArticle.author.blank) {
 				[summaryString appendFormat:@"%@%@", delimiter, theArticle.author];
+			}
 		}
-		if (![summaryString isEqualToString:@""])
+		if (![summaryString isEqualToString:@""]) {
 			summaryString = [NSMutableString stringWithFormat:@"\n%@", summaryString];
+		}
 
 		NSMutableAttributedString * summaryAttributedString = [[NSMutableAttributedString alloc] initWithString:summaryString attributes:bottomLineDictPtr];
 		[summaryAttributedString fixFontAttributeInRange:NSMakeRange(0u, summaryAttributedString.length)];
@@ -1548,10 +1571,11 @@
 	BOOL isProgressColumn = NO;
 
 	// We need to use a different column for condensed layout vs. table layout.
-	if (tableLayout == VNALayoutReport && [columnIdentifer isEqualToString:MA_Field_Subject])
+	if (tableLayout == VNALayoutReport && [columnIdentifer isEqualToString:MA_Field_Subject]) {
 		isProgressColumn = YES;
-	else if (tableLayout == VNALayoutCondensed && [columnIdentifer isEqualToString:MA_Field_Headlines])
+	} else if (tableLayout == VNALayoutCondensed && [columnIdentifer isEqualToString:MA_Field_Headlines]) {
 		isProgressColumn = YES;
+	}
 	
 	if (isProgressColumn)
 	{
@@ -1561,11 +1585,12 @@
 		// displayed and removed as needed.
 		if ([realCell respondsToSelector:@selector(setInProgress:forRow:)])
 		{
-            if (rowIndex == tv.selectedRow && isLoadingHTMLArticle)
+			if (rowIndex == tv.selectedRow && isLoadingHTMLArticle) {
 				[realCell setInProgress:YES forRow:rowIndex];
-			else
+			} else {
 				[realCell setInProgress:NO forRow:rowIndex];
-        }
+			}
+		}
 	}
 }
 
@@ -1711,8 +1736,9 @@
 	if (frame == articleText.mainFrame)
 	{
 		// Not really errors. Load is cancelled or a plugin is grabbing the URL and will handle it by itself.
-		if (!([error.domain isEqualToString:WebKitErrorDomain] && (error.code == NSURLErrorCancelled || error.code == WebKitErrorPlugInWillHandleLoad)))
+		if (!([error.domain isEqualToString:WebKitErrorDomain] && (error.code == NSURLErrorCancelled || error.code == WebKitErrorPlugInWillHandleLoad))) {
 			[self handleError:error withDataSource:frame.dataSource];
+		}
 		[self endMainFrameLoad];
 	}
 }
@@ -1729,8 +1755,9 @@
 	{
 		NSString *errorMessage = [NSString stringWithContentsOfFile:pathToErrorPage encoding:NSUTF8StringEncoding error:NULL];
 		errorMessage = [errorMessage stringByReplacingOccurrencesOfString: @"$ErrorInformation" withString: error.localizedDescription];
-		if (errorMessage != nil)
+		if (errorMessage != nil) {
 			[frame loadAlternateHTMLString:errorMessage baseURL:[NSURL fileURLWithPath:pathToErrorPage isDirectory:NO] forUnreachableURL:dataSource.request.URL];
+		}
 	}		
 }
 
@@ -1753,8 +1780,9 @@
  */
 -(void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
 {
-	if (frame == articleText.mainFrame)
+	if (frame == articleText.mainFrame) {
 		[self endMainFrameLoad];
+	}
 }
 
 -(void)webViewLoadFinished:(NSNotification *)notification

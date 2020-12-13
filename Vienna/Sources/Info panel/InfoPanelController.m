@@ -95,10 +95,11 @@
 	// Set the header details
 	self.folderName.stringValue = folder.name;
 	self.folderImage.image = folder.image; 
-	if ([folder.lastUpdate isEqualToDate:[NSDate distantPast]])
+	if ([folder.lastUpdate isEqualToDate:[NSDate distantPast]]) {
 		[self.lastRefreshDate setStringValue:NSLocalizedString(@"Never", nil)];
-	else
-        self.lastRefreshDate.stringValue = [NSDateFormatter relativeDateStringFromDate:folder.lastUpdate];
+	} else {
+		self.lastRefreshDate.stringValue = [NSDateFormatter relativeDateStringFromDate:folder.lastUpdate];
+	}
 
 	// Fill out the panels
 	self.urlField.stringValue = folder.feedURL;

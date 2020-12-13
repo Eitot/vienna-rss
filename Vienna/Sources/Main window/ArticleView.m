@@ -97,8 +97,9 @@ static NSMutableDictionary * stylePathMappings = nil;
  */
 +(NSDictionary *)loadStylesMap
 {
-	if (stylePathMappings == nil)
+	if (stylePathMappings == nil) {
 		stylePathMappings = [[NSMutableDictionary alloc] init];
+	}
 	
 	NSString * path = [[NSBundle mainBundle].sharedSupportPath stringByAppendingPathComponent:@"Styles"];
 	loadMapFromPath(path, stylePathMappings, YES, nil);
@@ -115,8 +116,9 @@ static NSMutableDictionary * stylePathMappings = nil;
  */
 -(BOOL)initForStyle:(NSString *)styleName
 {
-	if (stylePathMappings == nil)
+	if (stylePathMappings == nil) {
 		[ArticleView loadStylesMap];
+	}
 
 	NSString * path = stylePathMappings[styleName];
 	if (path != nil)
@@ -133,11 +135,12 @@ static NSMutableDictionary * stylePathMappings = nil;
 			    [[path stringByAppendingPathComponent:@"stylesheet.css"]
 			    stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet]];
 			NSString * javaScriptPath = [path stringByAppendingPathComponent:@"script.js"];
-			if ([[NSFileManager defaultManager] fileExistsAtPath:javaScriptPath])
+			if ([[NSFileManager defaultManager] fileExistsAtPath:javaScriptPath]) {
 				jsScript = [@"file://localhost" stringByAppendingString:[javaScriptPath
 				stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet]];
-			else
+			} else {
 				jsScript = nil;
+			}
 			
 			// Make sure the template is valid
 			NSString * firstLine = htmlTemplate.firstNonBlankLine.lowercaseString;
@@ -217,8 +220,9 @@ static NSMutableDictionary * stylePathMappings = nil;
 			// are stripped out if all the tags inside are blank.
 			while(!scanner.atEnd)
 			{
-				if ([scanner scanUpToString:@"<!--" intoString:&theString])
+				if ([scanner scanUpToString:@"<!--" intoString:&theString]) {
 					[htmlArticle appendString:[theArticle expandTags:theString withConditional:stripIfEmpty]];
+				}
 				if ([scanner scanString:@"<!--" intoString:nil])
 				{
 					NSString * commentTag = nil;
@@ -226,10 +230,12 @@ static NSMutableDictionary * stylePathMappings = nil;
 					if ([scanner scanUpToString:@"-->" intoString:&commentTag] && commentTag != nil)
 					{
 						commentTag = commentTag.trim;
-						if ([commentTag isEqualToString:@"cond:noblank"])
+						if ([commentTag isEqualToString:@"cond:noblank"]) {
 							stripIfEmpty = YES;
-						if ([commentTag isEqualToString:@"end"])
+						}
+						if ([commentTag isEqualToString:@"end"]) {
 							stripIfEmpty = NO;
+						}
 						[scanner scanString:@"-->" intoString:nil];
 					}
 				}
@@ -237,8 +243,9 @@ static NSMutableDictionary * stylePathMappings = nil;
 		}
 		
 		// Separate each article with a horizontal divider line
-		if (index > 0)
+		if (index > 0) {
 			[htmlText appendString:@"<hr><br />"];
+		}
 		[htmlText appendString:htmlArticle];
 	}
 	[htmlText appendString:@"</body></html>"];
@@ -264,8 +271,9 @@ static NSMutableDictionary * stylePathMappings = nil;
 	// If the current HTML is the same as the new HTML then we don't need to
 	// do anything here. This will stop the view from spurious redraws of the same
 	// article after a refresh.
-	if ([currentHTML isEqualToString:htmlText])
+	if ([currentHTML isEqualToString:htmlText]) {
 		return;
+	}
 	
 	// Remember the current html string.
 	currentHTML = [htmlText copy];
@@ -283,13 +291,15 @@ static NSMutableDictionary * stylePathMappings = nil;
 	if (theEvent.characters.length == 1)
 	{
 		unichar keyChar = [theEvent.characters characterAtIndex:0];
-		if ([APPCONTROLLER handleKeyDown:keyChar withFlags:theEvent.modifierFlags])
+		if ([APPCONTROLLER handleKeyDown:keyChar withFlags:theEvent.modifierFlags]) {
 			return;
+		}
 		
 		//Don't go back or forward in article view.
-        if ((theEvent.modifierFlags & NSEventModifierFlagCommand) &&
-			((keyChar == NSLeftArrowFunctionKey) || (keyChar == NSRightArrowFunctionKey)))
+		if ((theEvent.modifierFlags & NSEventModifierFlagCommand) &&
+			((keyChar == NSLeftArrowFunctionKey) || (keyChar == NSRightArrowFunctionKey))) {
 			return;
+		}
 	}
 	[super keyDown:theEvent];
 }
@@ -309,20 +319,22 @@ static NSMutableDictionary * stylePathMappings = nil;
 	{
 		if (deltaY != 0)
 		{
-			if (deltaY > 0)
+			if (deltaY > 0) {
 				[self scrollToTop];
-			else
+			} else {
 				[self scrollToBottom];
+			}
 		}
 	}
 	else 
 	{
 		if (deltaX != 0)
 		{
-			if (deltaX > 0)
+			if (deltaX > 0) {
 				[APPCONTROLLER goBack:self];
-			else 
+			} else { 
 				[APPCONTROLLER viewNextUnread:self];
+			}
 		}
 	}		
 }
@@ -356,8 +368,9 @@ static NSMutableDictionary * stylePathMappings = nil;
 -(void)webView:(WebView *)sender decidePolicyForNewWindowAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request newFrameName:(NSString *)frameName decisionListener:(id<WebPolicyDecisionListener>)listener
 {
 	NSInteger navType = [[actionInformation valueForKey:WebActionNavigationTypeKey] integerValue];
-	if ((navType == WebNavigationTypeLinkClicked) && ([Preferences standardPreferences].openLinksInBackground || ![Preferences standardPreferences].openLinksInVienna))
+	if ((navType == WebNavigationTypeLinkClicked) && ([Preferences standardPreferences].openLinksInBackground || ![Preferences standardPreferences].openLinksInVienna)) {
 		[NSApp.mainWindow makeFirstResponder:[APPCONTROLLER.browser primaryTabItemView].mainView];
+	}
 	
 	[super webView:sender decidePolicyForNewWindowAction:actionInformation request:request newFrameName:frameName decisionListener:listener];
 }
@@ -380,8 +393,9 @@ static NSMutableDictionary * stylePathMappings = nil;
 	}
 	
 	NSInteger navType = [[actionInformation valueForKey:WebActionNavigationTypeKey] integerValue];
-	if ((navType == WebNavigationTypeLinkClicked) && ([Preferences standardPreferences].openLinksInBackground || ![Preferences standardPreferences].openLinksInVienna))
+	if ((navType == WebNavigationTypeLinkClicked) && ([Preferences standardPreferences].openLinksInBackground || ![Preferences standardPreferences].openLinksInVienna)) {
 		[NSApp.mainWindow makeFirstResponder:[APPCONTROLLER.browser primaryTabItemView].mainView];
+	}
 	
 	[super webView:sender decidePolicyForNavigationAction:actionInformation request:request frame:frame decisionListener:listener];
 }	

@@ -27,8 +27,9 @@ static FolderImageCache * _folderImageCache = nil;
  */
 +(FolderImageCache *)defaultCache
 {
-    if (_folderImageCache == nil)
+    if (_folderImageCache == nil) {
         _folderImageCache = [[FolderImageCache alloc] init];
+    }
     return _folderImageCache;
 }
 
@@ -67,8 +68,9 @@ static FolderImageCache * _folderImageCache = nil;
             imageData = nil;
             NSLog(@"tiff exception with %@", fullFilePath);
         }
-        if (imageData != nil)
+        if (imageData != nil) {
             [[NSFileManager defaultManager] createFileAtPath:fullFilePath contents:imageData attributes:nil];
+        }
     }
 }
 

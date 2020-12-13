@@ -51,14 +51,17 @@ static BOOL _credentialsChanged;
     Preferences * prefs = [Preferences standardPreferences];
     syncButton.state = prefs.syncGoogleReader ? NSControlStateValueOn : NSControlStateValueOff;
     NSString * theUsername = prefs.syncingUser;
-    if (!theUsername)
+    if (!theUsername) {
         theUsername=@"";
+    }
     NSString * theHost = prefs.syncServer;
-    if (!theHost)
+    if (!theHost) {
         theHost=@"";
+    }
     NSString * thePassword = [KeyChain getGenericPasswordFromKeychain:theUsername serviceName:@"Vienna sync"];
-    if (!thePassword)
+    if (!thePassword) {
         thePassword=@"";
+    }
     username.stringValue = theUsername;
     openReaderHost.stringValue = theHost;
     password.stringValue = thePassword;
@@ -106,8 +109,9 @@ static BOOL _credentialsChanged;
                 }
             }
         }
-        else
+        else {
             [openReaderSource setEnabled:NO];
+        }
     }
     
 }
@@ -156,15 +160,18 @@ static BOOL _credentialsChanged;
     NSString * key = readerItem.title;
     NSDictionary * itemDict = [sourcesDict valueForKey:key];
     NSString* hostName = [itemDict valueForKey:@"Address"];
-    if (!hostName)
+    if (!hostName) {
         hostName=@"";
+    }
     NSString* hint = [itemDict valueForKey:@"Hint"];
-    if (!hint)
+    if (!hint) {
         hint=@"";
+    }
     openReaderHost.stringValue = hostName;
     credentialsInfoText.stringValue = hint;
-    if (sender != nil)	//user action
+    if (sender != nil) {	//user action
         [self handleServerTextDidChange:nil];
+    }
 }
 
 - (IBAction)visitWebsite:(id)sender

@@ -108,10 +108,12 @@
 {
 	// Convert deprecated under/not-under operators
 	// to is/is-not.
-	if (newOperator == MA_CritOper_Under)
+	if (newOperator == MA_CritOper_Under) {
 		newOperator = MA_CritOper_Is;
-	if (newOperator == MA_CritOper_NotUnder)
+	}
+	if (newOperator == MA_CritOper_NotUnder) {
 		newOperator = MA_CritOper_IsNot;
+	}
 	operator = newOperator;
 }
 
@@ -212,10 +214,12 @@
 {
 	if (string != nil)
 	{
-		if ([string.lowercaseString isEqualToString:@"any"])
+		if ([string.lowercaseString isEqualToString:@"any"]) {
 			return MA_CritCondition_Any;
-		if ([string.lowercaseString isEqualToString:@"all"])
+		}
+		if ([string.lowercaseString isEqualToString:@"all"]) {
 			return MA_CritCondition_All;
+		}
 	}
 	return MA_CritCondition_Invalid;
 }
@@ -226,10 +230,12 @@
  */
 +(NSString *)conditionToString:(CriteriaCondition)condition
 {
-	if (condition == MA_CritCondition_Any)
+	if (condition == MA_CritCondition_Any) {
 		return @"any";
-	if (condition == MA_CritCondition_All)
+	}
+	if (condition == MA_CritCondition_All) {
 		return @"all";
+	}
 	return @"";
 }
 

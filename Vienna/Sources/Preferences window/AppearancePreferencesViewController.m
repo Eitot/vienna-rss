@@ -82,8 +82,9 @@ NSInteger availableMinimumFontSizes[] = { 9, 10, 11, 12, 14, 18, 24 };
     
     NSUInteger i;
     [minimumFontSizes removeAllItems];
-    for (i = 0; i < countOfAvailableMinimumFontSizes; ++i)
+    for (i = 0; i < countOfAvailableMinimumFontSizes; ++i) {
         [minimumFontSizes addItemWithObjectValue:@(availableMinimumFontSizes[i])];
+    }
     minimumFontSizes.doubleValue = prefs.minimumFontSize;
 }
 

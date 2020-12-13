@@ -31,8 +31,9 @@ BOOL hasOSScriptsMenu(void)
 
 	for (index = 0; index < menuExtras.count; ++index)
 	{
-		if ([menuExtras[index] hasSuffix:@"Script Menu.menu"])
+		if ([menuExtras[index] hasSuffix:@"Script Menu.menu"]) {
 			return YES;
+		}
 	}
 	return NO;
 }
@@ -62,8 +63,9 @@ NSMenuItem * menuItemWithAction(SEL theSelector)
 	{
 		NSMenu * subMenu = [arrayOfMenus[index] submenu];
 		NSInteger itemIndex = [subMenu indexOfItemWithTarget:NSApp.delegate andAction:theSelector];
-		if (itemIndex >= 0)
+		if (itemIndex >= 0) {
 			return [subMenu itemAtIndex:itemIndex];
+		}
 	}
 	return nil;
 }
@@ -126,8 +128,9 @@ void loadMapFromPath(NSString * path, NSMutableDictionary * pathMappings, BOOL f
 	NSArray * arrayOfFiles = [fileManager contentsOfDirectoryAtPath:path error:nil];
 	if (arrayOfFiles != nil)
 	{
-		if (validExtensions)
+		if (validExtensions) {
 			arrayOfFiles = [arrayOfFiles pathsMatchingExtensions:validExtensions];
+		}
 		
 		for (NSString * fileName in arrayOfFiles)
 		{
@@ -136,8 +139,9 @@ void loadMapFromPath(NSString * path, NSMutableDictionary * pathMappings, BOOL f
 			
 			if ([fileManager fileExistsAtPath:fullPath isDirectory:&isDirectory] && (isDirectory == foldersOnly))
 			{
-				if ([fileName isEqualToString:@".DS_Store"])
+				if ([fileName isEqualToString:@".DS_Store"]) {
 					continue;
+				}
 
 				[pathMappings setValue:fullPath forKey:fileName.stringByDeletingPathExtension];
 			}
@@ -162,12 +166,14 @@ BOOL isAccessible(NSString * urlString)
         ok = SCNetworkReachabilityGetFlags(target, &flags);
         CFRelease(target);
 
-        if (!ok)
+        if (!ok) {
             return NO;
+        }
         return (flags & kSCNetworkReachabilityFlagsReachable) && !(flags & kSCNetworkReachabilityFlagsConnectionRequired);
     }
-    else
+    else {
         return NO;
+    }
 }
 
 /* runOKAlertPanel

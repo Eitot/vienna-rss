@@ -112,16 +112,13 @@
                 }
 				countImported += [self importSubscriptionGroup:outlineElement.children underParent:folderId];
 			}
-		}
-		else if (feedText != nil)
-		{
+		} else if (feedText != nil) {
 			Folder * folder;
 			NSInteger folderId;
 
-			if ((folder = [dbManager folderFromFeedURL:feedURL]) != nil)
+			if ((folder = [dbManager folderFromFeedURL:feedURL]) != nil) {
 				folderId = folder.itemId;
-			else
-			{
+			} else {
 				folderId = [dbManager addRSSFolder:feedText underParent:parentId afterChild:-1 subscriptionURL:feedURL];
 				++countImported;
 			}

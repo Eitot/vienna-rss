@@ -148,8 +148,9 @@
 		DownloadItem * item = list[index];
 		if (item)
 		{
-			if ([[NSWorkspace sharedWorkspace] openFile:item.filename] == NO)
+			if ([[NSWorkspace sharedWorkspace] openFile:item.filename] == NO) {
 				runOKAlertSheet(NSLocalizedString(@"Vienna cannot open the file.", nil), NSLocalizedString(@"Vienna cannot open the file \"%@\" because it moved since you downloaded it.", nil), item.filename.lastPathComponent);
+			}
 		}
 	}
 }
@@ -166,8 +167,9 @@
 		DownloadItem * item = list[index];
 		if (item && [[NSFileManager defaultManager] fileExistsAtPath:item.filename])
 		{
-			if ([[NSWorkspace sharedWorkspace] selectFile:item.filename inFileViewerRootedAtPath:@""] == NO)
+			if ([[NSWorkspace sharedWorkspace] selectFile:item.filename inFileViewerRootedAtPath:@""] == NO) {
 				runOKAlertSheet(NSLocalizedString(@"Vienna cannot show the file.", nil), NSLocalizedString(@"Vienna cannot show the file \"%@\" because it moved since you downloaded it.", nil), item.filename.lastPathComponent);
+			}
 		}
 		else
 		{
@@ -227,8 +229,9 @@
 	if (row >= 0)
 	{
 		// Select the row under the cursor if it isn't already selected
-		if (table.numberOfSelectedRows <= 1)
+		if (table.numberOfSelectedRows <= 1) {
 			[table selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+		}
 	}
 }
 
@@ -242,8 +245,9 @@
 		NSArray * list = [DownloadManager sharedInstance].downloadsList;
 		DownloadItem * item = list[rowIndex];
 
-		if (item.image != nil)
+		if (item.image != nil) {
 			[aCell setImage:item.image];
+		}
 		[aCell setTextColor:(rowIndex == aTableView.selectedRow) ? [NSColor whiteColor] : [NSColor controlTextColor]];
 	}
 }
@@ -260,8 +264,9 @@
 	// TODO: return item when we have a cell that can parse it. Until then, construct our own data.
 	NSString * rawfilename = item.filename.lastPathComponent;
     NSString * filename = [rawfilename stringByRemovingPercentEncoding];
-	if (filename == nil)
+	if (filename == nil) {
 		filename = @"";
+	}
 
 	// Different layout depending on the state
 	NSString * objectString = filename;

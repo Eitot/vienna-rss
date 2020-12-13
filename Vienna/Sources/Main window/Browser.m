@@ -219,10 +219,11 @@
  */
 -(void)showPreviousTab
 {
-	if ([self.tabBarControl indexOfTabViewItem:self.tabBarControl.selectedTabViewItem] == 0)
+	if ([self.tabBarControl indexOfTabViewItem:self.tabBarControl.selectedTabViewItem] == 0) {
 		[self.tabBarControl.tabView selectLastTabViewItem:self];
-	else
+	} else {
 		[self.tabBarControl.tabView selectPreviousTabViewItem:self];
+	}
 }
 
 /* showNextTab
@@ -231,10 +232,11 @@
  */
 -(void)showNextTab
 {
-	if ([self.tabBarControl indexOfTabViewItem:self.tabBarControl.tabView.selectedTabViewItem] == self.tabBarControl.tabView.numberOfTabViewItems - 1)
+	if ([self.tabBarControl indexOfTabViewItem:self.tabBarControl.tabView.selectedTabViewItem] == self.tabBarControl.tabView.numberOfTabViewItems - 1) {
 		[self.tabBarControl.tabView selectFirstTabViewItem:self];
-	else
+	} else {
 		[self.tabBarControl.tabView selectNextTabViewItem:self];
+	}
 }
 
 #pragma mark - TabBarDelegate

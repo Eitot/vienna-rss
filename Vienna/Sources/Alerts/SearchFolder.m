@@ -135,8 +135,9 @@
 
 				case MA_FieldType_Folder: {
 					Folder * folder = [db folderFromName:criteria.value];
-					if (folder != nil)
+					if (folder != nil) {
 						[folderValueField selectItemWithTitle:folder.name];
+					}
 					break;
 				}
 
@@ -171,8 +172,9 @@
 -(void)initSearchSheet:(NSString *)folderName
 {
 	// Clean up from any last run.
-	if (totalCriteria > 0)
+	if (totalCriteria > 0) {
 		[self removeAllCriteria];
+	}
 
 	// Initialize UI
 	if (!searchWindow)
@@ -256,8 +258,9 @@
 			NSMenuItem * menuItem = [folderValueField itemWithTitle:folder.name];
 			menuItem.image = folder.image;
 			menuItem.indentationLevel = indentation;
-			if (folder.type == VNAFolderTypeGroup)
+			if (folder.type == VNAFolderTypeGroup) {
 				[self initFolderValueField:folder.itemId atIndent:indentation + 2];
+			}
 		}
 	}
 }
@@ -533,8 +536,9 @@
 	NSInteger c;
 
 	// Do nothing if there's just one criteria
-	if (totalCriteria <= 1)
+	if (totalCriteria <= 1) {
 		return;
+	}
 	
 	// Remove the view from the parent view
 	NSView * row = arrayOfViews[index];
@@ -560,8 +564,9 @@
 	NSInteger rowHeight = searchCriteriaView.frame.size.height;
 	NSUInteger  c;
 
-	if (index > arrayOfViews.count)
+	if (index > arrayOfViews.count) {
 		index = arrayOfViews.count;
+	}
 
 	// Now add the new subview
 	archRow = [NSArchiver archivedDataWithRootObject:searchCriteriaView];

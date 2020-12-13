@@ -123,12 +123,14 @@
     BrowserPane *bp = (BrowserPane *)self.activeTab.view;
 
     NSURL * urlLink = [element valueForKey:WebElementLinkURLKey];
-    if (urlLink != nil)
+    if (urlLink != nil) {
         return [APPCONTROLLER contextMenuItemsForElement:element defaultMenuItems:defaultMenuItems];
+    }
 
     WebFrame * frameKey = [element valueForKey:WebElementFrameKey];
-    if (frameKey != nil && !bp.url.fileURL)
+    if (frameKey != nil && !bp.url.fileURL) {
         return [APPCONTROLLER contextMenuItemsForElement:element defaultMenuItems:defaultMenuItems];
+    }
 
     return defaultMenuItems;
 }

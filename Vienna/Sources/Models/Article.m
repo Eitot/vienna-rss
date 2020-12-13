@@ -119,10 +119,11 @@ NSString * MA_Field_HasEnclosure = @"HasEnclosure";
  */
 -(void)setEnclosure:(NSString *)newEnclosure
 {
-    if (newEnclosure)
+    if (newEnclosure) {
         articleData[MA_Field_Enclosure] = newEnclosure;
-    else
+    } else {
         [articleData removeObjectForKey:MA_Field_Enclosure];
+    }
 }
 
 /* markEnclosureDownloaded
@@ -236,8 +237,9 @@ NSString * MA_Field_HasEnclosure = @"HasEnclosure";
     if (summary == nil)
     {
         summary = [articleData[MA_Field_Text] summaryTextFromHTML];
-        if (summary == nil)
+        if (summary == nil) {
             summary = @"";
+        }
         articleData[MA_Field_Summary] = summary;
     }
     return summary;
@@ -413,8 +415,9 @@ NSString * MA_Field_HasEnclosure = @"HasEnclosure";
     while ((tagStartIndex = [newString indexOfCharacterInString:'$' afterIndex:tagStartIndex]) != NSNotFound)
     {
         NSUInteger tagEndIndex = [newString indexOfCharacterInString:'$' afterIndex:tagStartIndex + 1];
-        if (tagEndIndex == NSNotFound)
+        if (tagEndIndex == NSNotFound) {
             break;
+        }
         
         NSUInteger tagLength = (tagEndIndex - tagStartIndex) + 1;
         NSString * tagName = [newString substringWithRange:NSMakeRange(tagStartIndex + 1, tagLength - 2)];
@@ -432,15 +435,15 @@ NSString * MA_Field_HasEnclosure = @"HasEnclosure";
 		NSString * (*func)(id, SEL) = (void *)imp;
 		replacementString = func(self, selector);
 
-        if (replacementString == nil)
+        if (replacementString == nil) {
             [newString deleteCharactersInRange:NSMakeRange(tagStartIndex, tagLength)];
-        else
-        {
+        } else {
             [newString replaceCharactersInRange:NSMakeRange(tagStartIndex, tagLength) withString:replacementString];
             hasOneTag = YES;
             
-            if (!replacementString.blank)
+            if (!replacementString.blank) {
                 cond = NO;
+            }
             
             tagStartIndex += replacementString.length;
         }

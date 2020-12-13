@@ -216,8 +216,9 @@
 
 	// If the cell has an image, draw the image and then reduce
 	// cellFrame to move the text to the right of the image.
-	if (image != nil)
+	if (image != nil) {
 		[self drawCellImage:&cellFrame inView:controlView];
+	}
 
 	// If we have an error image, it appears on the right hand side.
 	if (auxiliaryImage)
@@ -277,8 +278,9 @@
         // Push new graphics state so we can draw using a shadow if needed
         [NSGraphicsContext saveGraphicsState];
         {
-            if (countLabelShadow)
+            if (countLabelShadow) {
                 [countLabelShadow set];
+            }
             
             // Draw the count in the rounded rectangle we just created.
             NSPoint point = NSMakePoint(NSMidX(countFrame) - numSize.width / 2.0f,  NSMidY(countFrame) - numSize.height / 2.0f );
@@ -302,8 +304,9 @@
 {
 	if ([controlView isKindOfClass:[FolderView class]])
 	{
-		if (image != nil)
+		if (image != nil) {
 			aRect.origin.x += image.size.width + 3;
+		}
 		++aRect.origin.y;
 		[controlView performSelector:@selector(prvtResizeTheFieldEditor) withObject:nil afterDelay:0.001];
 	}

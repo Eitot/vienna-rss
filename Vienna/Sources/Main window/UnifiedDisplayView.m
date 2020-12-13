@@ -218,8 +218,9 @@
 {
 	// If this is an URL link, do the link-specific items.
 	NSURL * urlLink = [element valueForKey:WebElementLinkURLKey];
-	if (urlLink != nil)
+	if (urlLink != nil) {
 		return [self.controller contextMenuItemsForElement:element defaultMenuItems:defaultMenuItems];
+	}
 
 	NSMutableArray * newDefaultMenu = [[NSMutableArray alloc] init];
 	NSInteger count = defaultMenuItems.count;
@@ -230,17 +231,17 @@
 	for (index = 0; index < count; index++)
 	{
 		NSMenuItem * menuItem = defaultMenuItems[index];
-		if (menuItem.tag != WebMenuItemTagReload)
+		if (menuItem.tag != WebMenuItemTagReload) {
 			[newDefaultMenu addObject:menuItem];
+		}
 	}
 
 	// If we still have some useful menu items (other than Webkit's Web Inspector)
 	// then use them for the new default menu
-	if (newDefaultMenu.count > 0 && ![newDefaultMenu[0] isSeparatorItem])
+	if (newDefaultMenu.count > 0 && ![newDefaultMenu[0] isSeparatorItem]) {
 		defaultMenuItems = [newDefaultMenu copy];
 	// otherwise set the default items to nil as we may have removed all the items.
-	else
-	{
+	} else {
 		defaultMenuItems = nil;
 	}
 
@@ -271,9 +272,10 @@
 				[articleList reloadDataForRowIndexes:[NSIndexSet indexSetWithIndex:row] columnIndexes:[NSIndexSet indexSetWithIndex:0]];
 			}
 		}
-		else
+		else {
 			// TODO : what should we do ?
 			NSLog(@"Webview error %@ associated to object of class %@", error, [obj class]);
+		}
 	}
 }
 
@@ -314,9 +316,9 @@
                 //set the new frame to the webview
                 sender.frame = newWebViewRect;
 
-                if (row < rowHeightArray.count)
+                if (row < rowHeightArray.count) {
 					rowHeightArray[row] = @(fittingHeight);
-                else
+                } else
                 {	NSInteger toAdd = row - rowHeightArray.count ;
                     for (NSInteger i = 0 ; i < toAdd ; i++)
                     {
@@ -351,8 +353,9 @@
 	NSMenuItem * contextualMenuItem;
 	NSInteger index;
 	NSMenu * articleListMenu = articleList.menu;
-	if (articleListMenu == nil)
+	if (articleListMenu == nil) {
 		return;
+	}
 	mainMenuItem = menuItemWithAction(@selector(viewSourceHomePageInAlternateBrowser:));
 	if (mainMenuItem != nil)
 	{
@@ -443,11 +446,13 @@
 		if ([Preferences standardPreferences].markReadInterval > 0.0f)
 		{
 			Article * article = self.controller.articleController.allArticles[0u];
-			if (!article.read)
+			if (!article.read) {
 				shouldSelectArticle = NO;
+			}
 		}
-		if (shouldSelectArticle)
+		if (shouldSelectArticle) {
 			[self makeRowSelectedAndVisible:0];
+		}
 	}
 }
 
@@ -571,8 +576,9 @@
  */
 -(BOOL)viewNextUnreadInCurrentFolder:(NSInteger)currentRow
 {
-	if (currentRow < 0)
+	if (currentRow < 0) {
 		currentRow = 0;
+	}
 
 	NSArray * allArticles = self.controller.articleController.allArticles;
 	NSInteger totalRows = allArticles.count;
@@ -600,8 +606,9 @@
 	if (!result)
 	{
 		NSInteger count = self.controller.articleController.allArticles.count;
-		if (count > 0)
+		if (count > 0) {
 			[self makeRowSelectedAndVisible:0];
+		}
 	}
 	return result;
 }
@@ -719,8 +726,9 @@
  */
 - (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row
 {
-	if (![tableView isEqualTo:articleList])
+	if (![tableView isEqualTo:articleList]) {
 		return nil;
+	}
 
 	ArticleCellView *cellView = (ArticleCellView*)[tableView makeViewWithIdentifier:LISTVIEW_CELL_IDENTIFIER owner:self];
 
@@ -735,8 +743,9 @@
 	}
 
 	NSArray * allArticles = self.controller.articleController.allArticles;
-	if (row < 0 || row >= allArticles.count)
+	if (row < 0 || row >= allArticles.count) {
 	    return nil;
+	}
 
 	Article * theArticle = allArticles[row];
 	NSInteger articleFolderId = theArticle.folderId;
@@ -958,8 +967,9 @@
 	if (theEvent.characters.length == 1)
 	{
 		unichar keyChar = [theEvent.characters characterAtIndex:0];
-		if ([self.controller handleKeyDown:keyChar withFlags:theEvent.modifierFlags])
+		if ([self.controller handleKeyDown:keyChar withFlags:theEvent.modifierFlags]) {
 			return;
+		}
 	}
 	[self interpretKeyEvents:@[theEvent]];
 }

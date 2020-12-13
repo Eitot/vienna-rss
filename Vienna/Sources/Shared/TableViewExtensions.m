@@ -96,8 +96,9 @@
  */
 -(NSMenu *)menuForEvent:(NSEvent *)theEvent
 {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(tableView:menuWillAppear:)])
+    if (self.delegate && [self.delegate respondsToSelector:@selector(tableView:menuWillAppear:)]) {
         [(id)self.delegate tableView:self menuWillAppear:theEvent];
+    }
 	return self.selectedRow >= 0 ? self.menu : nil;
 }
 

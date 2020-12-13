@@ -93,8 +93,9 @@
 
 		// Add the progress indicator as a subview of the cell if
 		// it is not already one.
-		if (progressIndicator.superview != self)
+		if (progressIndicator.superview != self) {
 			[self addSubview:progressIndicator];
+		}
 
 		// Start the animation.
 		[progressIndicator startAnimation:self];
