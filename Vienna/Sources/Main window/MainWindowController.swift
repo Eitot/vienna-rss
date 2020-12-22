@@ -90,7 +90,7 @@ final class MainWindowController: NSWindowController {
     // MARK: Actions
 
     // swiftlint:disable private_action
-    @IBAction func changeFiltering(_ sender: NSMenuItem) { // TODO: This should be handled by ArticleController
+    @IBAction func changeFiltering(_ sender: NSMenuItem) {  // TODO: This should be handled by ArticleController
         Preferences.standard().filterMode = sender.tag
         filterLabel.stringValue = sender.title
     }
@@ -116,9 +116,11 @@ extension MainWindowController: NSMenuItemValidation {
             menuItem.state = menuItem.tag == Preferences.standard().filterMode ? .on : .off
         case #selector(toggleStatusBar(_:)):
             if statusBar.isDisclosed {
-                menuItem.title = NSLocalizedString("Hide Status Bar", comment: "Title of a menu item")
+                menuItem.title = NSLocalizedString(
+                    "Hide Status Bar", comment: "Title of a menu item")
             } else {
-                menuItem.title = NSLocalizedString("Show Status Bar", comment: "Title of a menu item")
+                menuItem.title = NSLocalizedString(
+                    "Show Status Bar", comment: "Title of a menu item")
             }
         default:
             return responds(to: menuItem.action)
@@ -140,16 +142,18 @@ extension MainWindowController: NSWindowDelegate {
         filterButton.isEnabled = true
 
         observationTokens = [
-            OpenReader.sharedManager().observe(\.statusMessage, options: .new) { [weak self] manager, change in
+            OpenReader.sharedManager().observe(\.statusMessage, options: .new) {
+                [weak self] manager, change in
                 if change.newValue is String {
                     self?.statusLabel.stringValue = manager.statusMessage
                 }
             },
-            RefreshManager.shared().observe(\.statusMessage, options: .new) { [weak self] manager, change in
+            RefreshManager.shared().observe(\.statusMessage, options: .new) {
+                [weak self] manager, change in
                 if change.newValue is String {
                     self?.statusLabel.stringValue = manager.statusMessage
                 }
-            }
+            },
         ]
     }
 
@@ -171,7 +175,10 @@ extension MainWindowController: NSToolbarDelegate {
         return (NSApp.delegate as? AppController)?.pluginManager
     }
 
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
+    func toolbar(
+        _ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
+        willBeInsertedIntoToolbar flag: Bool
+    ) -> NSToolbarItem? {
         if itemIdentifier == NSToolbarItem.Identifier("SearchItem") {
             let item: NSToolbarItem
             if #available(macOS 11, *) {
@@ -215,7 +222,7 @@ extension MainWindowController: NSToolbarDelegate {
             NSToolbarItem.Identifier("GetInfo"),
             NSToolbarItem.Identifier("Action"),
             NSToolbarItem.Identifier("Styles"),
-            NSToolbarItem.Identifier("SearchItem")
+            NSToolbarItem.Identifier("SearchItem"),
         ]
 
         let pluginIdentifiers = pluginManager?.toolbarItems ?? []
@@ -233,7 +240,7 @@ extension MainWindowController: NSToolbarDelegate {
             NSToolbarItem.Identifier("Subscribe"),
             NSToolbarItem.Identifier("SkipFolder"),
             NSToolbarItem.Identifier("Action"),
-            NSToolbarItem.Identifier("Refresh")
+            NSToolbarItem.Identifier("Refresh"),
         ]
 
         let pluginIdentifiers = pluginManager?.defaultToolbarItems() as? [String] ?? []
@@ -254,17 +261,19 @@ extension MainWindowController: NSMenuDelegate {
 
     // This method is presently only called for the style menu.
     func menuNeedsUpdate(_ menu: NSMenu) {
-        for menuItem in menu.items where menuItem.action == #selector(AppController.doSelectStyle(_:)) {
+        for menuItem in menu.items
+        where menuItem.action == #selector(AppController.doSelectStyle(_:)) {
             menu.removeItem(menuItem)
         }
 
         if let styles = (Array(ArticleView.loadStylesMap().keys) as? [String])?.sorted() {
             var index = 0
             while index < styles.count {
-                menu.insertItem(withTitle: styles[index],
-                                action: #selector(AppController.doSelectStyle(_:)),
-                                keyEquivalent: "",
-                                at: index + 1)
+                menu.insertItem(
+                    withTitle: styles[index],
+                    action: #selector(AppController.doSelectStyle(_:)),
+                    keyEquivalent: "",
+                    at: index + 1)
                 index += 1
             }
         }

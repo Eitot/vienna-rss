@@ -20,6 +20,7 @@
 import Cocoa
 
 /// An overlay status bar can show context-specific information above a view.
+///
 /// It is supposed to be a subview of another view. Once added, it will set its
 /// own frame and constraints. Removing the status bar from its superview will
 /// unwind the constraints.
@@ -70,23 +71,28 @@ final class OverlayStatusBar: NSView {
         addressField.translatesAutoresizingMaskIntoConstraints = false
 
         // The text field should always be among the first views to shrink.
-        addressField.setContentCompressionResistancePriority(.fittingSizeCompression, for: .horizontal)
+        addressField.setContentCompressionResistancePriority(
+            .fittingSizeCompression, for: .horizontal)
 
         addSubview(backgroundView)
         backgroundView.addSubview(addressField)
 
         // Set the constraints.
         var backgroundViewConstraints: [NSLayoutConstraint] = []
-        backgroundViewConstraints += NSLayoutConstraint.constraints(withVisualFormat: "V:|-3-[view]-3-|",
-                                                                    metrics: nil, views: ["view": backgroundView])
-        backgroundViewConstraints += NSLayoutConstraint.constraints(withVisualFormat: "H:|-3-[view]-3-|",
-                                                                    metrics: nil, views: ["view": backgroundView])
+        backgroundViewConstraints += NSLayoutConstraint.constraints(
+            withVisualFormat: "V:|-3-[view]-3-|",
+            metrics: nil, views: ["view": backgroundView])
+        backgroundViewConstraints += NSLayoutConstraint.constraints(
+            withVisualFormat: "H:|-3-[view]-3-|",
+            metrics: nil, views: ["view": backgroundView])
 
         var addressFieldConstraints: [NSLayoutConstraint] = []
-        addressFieldConstraints += NSLayoutConstraint.constraints(withVisualFormat: "V:|-2-[label]-2-|",
-                                                                  metrics: nil, views: ["label": addressField])
-        addressFieldConstraints += NSLayoutConstraint.constraints(withVisualFormat: "H:|-6-[label]-6-|",
-                                                                  metrics: nil, views: ["label": addressField])
+        addressFieldConstraints += NSLayoutConstraint.constraints(
+            withVisualFormat: "V:|-2-[label]-2-|",
+            metrics: nil, views: ["label": addressField])
+        addressFieldConstraints += NSLayoutConstraint.constraints(
+            withVisualFormat: "H:|-6-[label]-6-|",
+            metrics: nil, views: ["label": addressField])
 
         NSLayoutConstraint.activate(backgroundViewConstraints)
         NSLayoutConstraint.activate(addressFieldConstraints)
@@ -118,10 +124,12 @@ final class OverlayStatusBar: NSView {
         superview.wantsLayer = true
 
         var baseContraints: [NSLayoutConstraint] = []
-        baseContraints += NSLayoutConstraint.constraints(withVisualFormat: "V:|->=0-[view]-0-|",
-                                                         options: [], metrics: nil, views: ["view": self])
-        baseContraints += NSLayoutConstraint.constraints(withVisualFormat: "H:|->=0-[view]->=0-|",
-                                                         options: [], metrics: nil, views: ["view": self])
+        baseContraints += NSLayoutConstraint.constraints(
+            withVisualFormat: "V:|->=0-[view]-0-|",
+            options: [], metrics: nil, views: ["view": self])
+        baseContraints += NSLayoutConstraint.constraints(
+            withVisualFormat: "H:|->=0-[view]->=0-|",
+            options: [], metrics: nil, views: ["view": self])
 
         NSLayoutConstraint.activate(baseContraints)
 
@@ -150,8 +158,10 @@ final class OverlayStatusBar: NSView {
 
     private var position: Position?
 
-    private lazy var leadingConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[view]", options: [], metrics: nil, views: ["view": self])
-    private lazy var trailingConstraints = NSLayoutConstraint.constraints(withVisualFormat: "H:[view]-0-|", options: [], metrics: nil, views: ["view": self])
+    private lazy var leadingConstraints = NSLayoutConstraint.constraints(
+        withVisualFormat: "H:|-0-[view]", options: [], metrics: nil, views: ["view": self])
+    private lazy var trailingConstraints = NSLayoutConstraint.constraints(
+        withVisualFormat: "H:[view]-0-|", options: [], metrics: nil, views: ["view": self])
 
     // The status bar is pinned simply by setting and unsetting constraints.
     private func pin(to position: Position, of positioningView: NSView) {
@@ -181,8 +191,10 @@ final class OverlayStatusBar: NSView {
 
     // MARK: Handling status updates
 
-    /// The label to show. Setting this property will show or hide the status
-    /// bar. It will remain visible until the label is set to `nil`.
+    /// The label to show.
+    ///
+    /// Setting this property will show or hide the status bar. It will remain
+    /// visible until the label is set to `nil`.
     @objc var label: String? {
         didSet {
             // This closure is meant to be called very often. It should not
@@ -205,10 +217,11 @@ final class OverlayStatusBar: NSView {
                 return
             }
 
-            NSAnimationContext.runAnimationGroup({ context in
-                context.duration = 0.4
-                backgroundView.animator().alphaValue = isShown ? 1 : 0
-            }, completionHandler: nil)
+            NSAnimationContext.runAnimationGroup(
+                { context in
+                    context.duration = 0.4
+                    backgroundView.animator().alphaValue = isShown ? 1 : 0
+                }, completionHandler: nil)
         }
     }
 
@@ -225,10 +238,13 @@ final class OverlayStatusBar: NSView {
         let size = CGSize(width: rect.maxX, height: frame.height + 15)
         let origin = CGPoint(x: rect.minX, y: rect.minY)
 
-        let trackingArea = NSTrackingArea(rect: NSRect(origin: origin, size: size),
-                                          options: [.mouseEnteredAndExited, .mouseMoved,
-                                                    .activeInKeyWindow],
-                                          owner: self, userInfo: nil)
+        let trackingArea = NSTrackingArea(
+            rect: NSRect(origin: origin, size: size),
+            options: [
+                .mouseEnteredAndExited, .mouseMoved,
+                .activeInKeyWindow,
+            ],
+            owner: self, userInfo: nil)
         self.trackingArea = trackingArea
 
         trackingView.addTrackingArea(trackingArea)
@@ -251,7 +267,9 @@ final class OverlayStatusBar: NSView {
             return
         }
 
-        if superview.trackingAreas.contains(trackingArea), trackingArea.rect.width != superview.bounds.width {
+        if superview.trackingAreas.contains(trackingArea),
+            trackingArea.rect.width != superview.bounds.width
+        {
             stopTrackingMouse(on: superview)
             startTrackingMouse(on: superview)
         }
@@ -272,9 +290,10 @@ final class OverlayStatusBar: NSView {
 
         // Add the width constraint, if not already added.
         if widthConstraint == nil {
-            let widthConstraint = NSLayoutConstraint(item: self, attribute: .width, relatedBy: .lessThanOrEqual,
-                                                     toItem: nil, attribute: .notAnAttribute, multiplier: 1,
-                                                     constant: superview.bounds.midX - 8)
+            let widthConstraint = NSLayoutConstraint(
+                item: self, attribute: .width, relatedBy: .lessThanOrEqual,
+                toItem: nil, attribute: .notAnAttribute, multiplier: 1,
+                constant: superview.bounds.midX - 8)
             self.widthConstraint = widthConstraint
             widthConstraint.isActive = true
         }

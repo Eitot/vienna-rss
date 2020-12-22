@@ -19,8 +19,9 @@
 
 import Cocoa
 
-/// A toolbar item with a button as its view. The toolbar item responds to
-/// validation requests.
+/// A toolbar item with a button as its view.
+///
+/// The toolbar item responds to validation requests.
 class ButtonToolbarItem: NSToolbarItem {
 
     // Assign the item's target to the menu-form representation.
@@ -60,9 +61,9 @@ class ButtonToolbarItem: NSToolbarItem {
         }
 
         switch NSApp.target(forAction: action, to: target, from: self) {
-        case let validator as NSToolbarItemValidation:
+        case .some(let validator as NSToolbarItemValidation):
             isEnabled = validator.validateToolbarItem(self)
-        case .some, .none:
+        default:
             isEnabled = false
         }
     }

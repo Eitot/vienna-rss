@@ -34,7 +34,7 @@ final class DirectoryMonitor: NSObject {
     @objc
     init(directories: [URL]) {
         self.directories = directories.filter { $0.hasDirectoryPath }
-                                      .filter { (try? $0.checkResourceIsReachable()) == true }
+            .filter { (try? $0.checkResourceIsReachable()) == true }
     }
 
     // When the instance is ready to be deinitialized, the stream should be
@@ -73,11 +73,12 @@ final class DirectoryMonitor: NSObject {
         // the event handler is passed as a stream context, allowing the handler
         // to be called from within the closure.
         let pointer = Unmanaged.passUnretained(self).toOpaque()
-        var context = FSEventStreamContext(version: 0,
-                                           info: pointer,
-                                           retain: nil,
-                                           release: nil,
-                                           copyDescription: nil)
+        var context = FSEventStreamContext(
+            version: 0,
+            info: pointer,
+            retain: nil,
+            release: nil,
+            copyDescription: nil)
 
         // The callback will pass along the raw pointer to the direcory monitor
         // instance. Recasting this will make the event handler accessible.
@@ -95,13 +96,16 @@ final class DirectoryMonitor: NSObject {
         // that happen within 2 seconds of each other.
         let paths = directories.map { $0.path as CFString } as CFArray
         let flags = UInt32(kFSEventStreamCreateFlagFileEvents | kFSEventStreamCreateFlagWatchRoot)
-        guard let stream = FSEventStreamCreate(kCFAllocatorDefault,
-                                               callback,
-                                               &context,
-                                               paths,
-                                               FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
-                                               2,
-                                               flags) else {
+        guard
+            let stream = FSEventStreamCreate(
+                kCFAllocatorDefault,
+                callback,
+                &context,
+                paths,
+                FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
+                2,
+                flags)
+        else {
             throw DirectoryMonitorError.streamCouldNotBeCreated
         }
         self.stream = stream
@@ -110,9 +114,10 @@ final class DirectoryMonitor: NSObject {
         // FSEvents has a two-pronged approach: schedule a stream (and
         // record the changes) and start sending events. This granualarity
         // is not desirable for the directory monitor, so they are combined.
-        FSEventStreamScheduleWithRunLoop(stream,
-                                         RunLoop.current.getCFRunLoop(),
-                                         CFRunLoopMode.defaultMode.rawValue)
+        FSEventStreamScheduleWithRunLoop(
+            stream,
+            RunLoop.current.getCFRunLoop(),
+            CFRunLoopMode.defaultMode.rawValue)
         if !FSEventStreamStart(stream) {
             // This closure is executed if start() fails. Accordingly, the
             // stream must be unscheduled.

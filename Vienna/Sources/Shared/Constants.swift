@@ -17,14 +17,14 @@
 //  limitations under the License.
 //
 
-/// New articles notification method (managed as an array of binary flags)
+// New articles notification method (managed as an array of binary flags)
 @objc
 enum VNANewArticlesNotification: Int {
     case badge = 1
     case bounce = 2
 }
 
-/// Filtering options
+// Filtering options
 @objc
 enum VNAFilter: Int {
     case all = 0
@@ -36,7 +36,7 @@ enum VNAFilter: Int {
     case unreadOrFlagged = 6
 }
 
-/// Refresh folder options
+// Refresh folder options
 @objc
 enum VNARefresh: Int {
     case redrawList = 0
@@ -44,7 +44,7 @@ enum VNARefresh: Int {
     case sortAndRedraw = 3
 }
 
-/// Layout styles
+// Layout styles
 @objc
 enum VNALayout: Int {
     case report = 1
@@ -52,14 +52,14 @@ enum VNALayout: Int {
     case unified = 3
 }
 
-/// Folders tree sort method
+// Folders tree sort method
 @objc
 enum VNAFolderSort: Int {
     case manual = 0
     case byName = 1
 }
 
-/// Empty trash option on quitting
+// Empty trash option on quitting
 @objc
 enum VNAEmptyTrash: Int {
     case none = 0

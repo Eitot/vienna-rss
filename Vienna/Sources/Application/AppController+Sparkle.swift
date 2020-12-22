@@ -22,28 +22,29 @@ import Sparkle
 
 extension AppController: SUUpdaterDelegate {
 
-	public func feedURLString(for updater: SUUpdater) -> String? {
-		guard var urlString = Bundle.main.infoDictionary?["SUFeedURL"] as? String else {
-			return nil
-		}
+    public func feedURLString(for updater: SUUpdater) -> String? {
+        guard var urlString = Bundle.main.infoDictionary?["SUFeedURL"] as? String else {
+            return nil
+        }
 
-		if Preferences.standard()?.alwaysAcceptBetas == true {
-			guard let referenceURL = URL(string: urlString) else {
-				print("Invalid Sparkle feed URL : \(urlString)")
-				return nil
-			}
+        if Preferences.standard()?.alwaysAcceptBetas == true {
+            guard let referenceURL = URL(string: urlString) else {
+                print("Invalid Sparkle feed URL : \(urlString)")
+                return nil
+            }
 
-			let pathExt = referenceURL.pathExtension
-			let pathURL = referenceURL.deletingLastPathComponent()
-			let newURL = pathURL.appendingPathComponent("changelog_beta").appendingPathExtension(pathExt)
-			urlString = newURL.absoluteString
-		}
+            let pathExt = referenceURL.pathExtension
+            let pathURL = referenceURL.deletingLastPathComponent()
+            let newURL = pathURL.appendingPathComponent("changelog_beta").appendingPathExtension(
+                pathExt)
+            urlString = newURL.absoluteString
+        }
 
-		return urlString
-	}
+        return urlString
+    }
 
-	public func updaterWillRelaunchApplication(_ updater: SUUpdater) {
-		Preferences.standard()?.handleUpdateRestart()
-	}
+    public func updaterWillRelaunchApplication(_ updater: SUUpdater) {
+        Preferences.standard()?.handleUpdateRestart()
+    }
 
 }

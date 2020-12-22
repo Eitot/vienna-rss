@@ -37,9 +37,10 @@ class GradientView: NSView {
         }
     }
 
-    /// The angle of the linear gradient, specified in degrees. Positive values
-    /// indicate rotation in the counter-clockwise direction relative to the
-    /// horizontal axis.
+    /// The angle of the linear gradient, specified in degrees.
+    ///
+    /// Positive values indicate rotation in the counter-clockwise direction
+    /// relative to the horizontal axis.
     @IBInspectable var angle: CGFloat = 270 {
         didSet {
             needsDisplay = true

@@ -21,7 +21,7 @@ import Cocoa
 
 // This class exists to provide fallback images for several toolbar items of the
 // preferences window.
-// 
+//
 // Rather than adding copies of the standard images provided by Apple, they are
 // instead referenced by name. The remaining toolbar items use fallback images
 // in the asset catalog.
