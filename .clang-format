@@ -1,0 +1,23 @@
+# ClangFormat 11.0
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+AccessModifierOffset:                           -4
+AlignConsecutiveMacros:                         true
+AlignOperands:                                  DontAlign
+AlignTrailingComments:                          false
+AllowShortFunctionsOnASingleLine:               Empty
+AllowShortLoopsOnASingleLine:                   false
+BinPackArguments:                               false
+BinPackParameters:                              false
+BraceWrapping:
+  AfterFunction:                                true
+BreakBeforeBraces:                              Custom
+IncludeBlocks:                                  Regroup
+IndentCaseLabels:                               true
+IndentWidth:                                    4
+IndentWrappedFunctionNames:                     true
+KeepEmptyLinesAtTheStartOfBlocks:               false
+ObjCBlockIndentWidth:                           4
+ObjCSpaceAfterProperty:                         true
+SpaceBeforeAssignmentOperators:                 true
+SpacesInContainerLiterals:                      false

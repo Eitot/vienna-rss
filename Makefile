@@ -19,6 +19,11 @@ clean:
 	xcodebuild -project $(PROJECT) -scheme "Vienna" -configuration Deployment clean
 	rm -fr build
 
+commands:
+	xcodebuild -project $(PROJECT) -scheme Vienna -configuration Development \
+		COMPILER_INDEX_STORE_ENABLE=NO CLANG_ENABLE_MODULE_DEBUGGING=NO clean build \
+		| xcpretty -r json-compilation-database -o compile_commands.json
+
 localize:
 	for locale in $(LOCALES); do \
 		xcodebuild -importLocalizations -project $(PROJECT) -localizationPath "Localizations/$${locale}.xliff"; \

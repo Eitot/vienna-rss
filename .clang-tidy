@@ -1,0 +1,8 @@
+# ClangTidy 11.0
+# https://clang.llvm.org/extra/clang-tidy/checks/list.html
+
+Checks:                '-*,readability-braces-around-statements'
+FormatStyle:           file
+CheckOptions:
+  - key:               readability-braces-around-statements.ShortStatementLines
+    value:             '0'
