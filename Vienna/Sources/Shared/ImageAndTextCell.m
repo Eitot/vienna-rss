@@ -195,25 +195,6 @@
  */
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {
-	// If the cell has a progress indicator, ensure it's framed properly
-	// and then reduce cellFrame to keep from overlapping it
-	if (inProgress)
-	{
-		NSRect progressIndicatorFrame;
-		NSDivideRect(cellFrame, &progressIndicatorFrame, &cellFrame, PROGRESS_INDICATOR_DIMENSION + PROGRESS_INDICATOR_LEFT_MARGIN, NSMaxXEdge);
-		if (!item.progressIndicator) {
-			progressIndicatorFrame.size = NSMakeSize(PROGRESS_INDICATOR_DIMENSION, PROGRESS_INDICATOR_DIMENSION);
-			progressIndicatorFrame.origin.x += PROGRESS_INDICATOR_LEFT_MARGIN;
-			progressIndicatorFrame.origin.y += (cellFrame.size.height - PROGRESS_INDICATOR_DIMENSION) / 2.0;
-			[item allocAndStartProgressIndicatorWithFrame:progressIndicatorFrame inView:controlView];
-		}
-	}
-	else
-	{
-		[item stopAndReleaseProgressIndicator];
-	}
-
-
 	// If the cell has an image, draw the image and then reduce
 	// cellFrame to move the text to the right of the image.
 	if (image != nil)

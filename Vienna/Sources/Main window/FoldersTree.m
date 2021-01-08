@@ -711,9 +711,6 @@
 	NSInteger folderId = ((NSNumber *)nc.object).integerValue;
 	TreeNode * thisNode = [self.rootNode nodeFromID:folderId];
 	TreeNode * nextNode;
-	
-	// Stop any in process progress indicators.
-	[thisNode stopAndReleaseProgressIndicator];
 
 	// First find the next node we'll select
 	if (thisNode.nextSibling != nil)

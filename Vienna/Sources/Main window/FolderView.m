@@ -177,10 +177,7 @@
  */
 -(void)outlineViewItemDidCollapse:(NSNotification *)notification
 {
-	// Have the collapsed item remove any progress indicators.
-	TreeNode * collapsedItem = notification.userInfo[@"NSObject"];
-	[collapsedItem stopAndReleaseProgressIndicator];
-	
+
 }
 
 /* menuForEvent
