@@ -340,8 +340,6 @@
 -(BOOL)enableMinimumFontSize		{ return [Preferences standardPreferences].enableMinimumFontSize; }
 -(NSInteger)refreshFrequency				{ return [Preferences standardPreferences].refreshFrequency; }
 -(NSString *)displayStyle			{ return [Preferences standardPreferences].displayStyle; }
--(NSString *)folderListFont			{ return [Preferences standardPreferences].folderListFont; }
--(NSInteger)folderListFontSize			{ return [Preferences standardPreferences].folderListFontSize; }
 -(NSString *)articleListFont		{ return [Preferences standardPreferences].articleListFont; }
 -(NSInteger)articleListFontSize			{ return [Preferences standardPreferences].articleListFontSize; }
 -(BOOL)statusBarVisible				{ return [Preferences standardPreferences].showStatusBar; }
@@ -362,10 +360,31 @@
 -(void)setEnableMinimumFontSize:(BOOL)flag			{ [Preferences standardPreferences].enableMinimumFontSize = flag; }
 -(void)setRefreshFrequency:(NSInteger)newFrequency		{ [Preferences standardPreferences].refreshFrequency = newFrequency; }
 -(void)setDisplayStyle:(NSString *)newStyle			{ [Preferences standardPreferences].displayStyle = newStyle; }
--(void)setFolderListFont:(NSString *)newFontName	{ [Preferences standardPreferences].folderListFont = newFontName; }
--(void)setFolderListFontSize:(NSInteger)newFontSize		{ [Preferences standardPreferences].folderListFontSize = newFontSize; }
 -(void)setArticleListFont:(NSString *)newFontName	{ [Preferences standardPreferences].articleListFont = newFontName; }
 -(void)setArticleListFontSize:(NSInteger)newFontSize		{ [Preferences standardPreferences].articleListFontSize = newFontSize; }
 -(void)setStatusBarVisible:(BOOL)flag				{ [Preferences standardPreferences].showStatusBar = flag; }
 -(void)setFilterBarVisible:(BOOL)flag				{ [Preferences standardPreferences].showFilterBar = flag; }
+
+// MARK: - Deprecated
+
+- (NSString *)folderListFont
+{
+    return [NSString string];
+}
+
+- (void)setFolderListFont:(NSString *)folderListFont
+{
+    // Not implemented
+}
+
+- (NSInteger)folderListFontSize
+{
+    return -1;
+}
+
+- (void)setFolderListFontSize:(NSInteger)folderListFontSize
+{
+    // Not implemented
+}
+
 @end

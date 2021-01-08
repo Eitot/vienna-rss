@@ -28,7 +28,6 @@ extern NSString * MAPref_ArticleListFont;
 extern NSString * MAPref_AutoSortFoldersTree;
 extern NSString * MAPref_CheckForUpdatedArticles;
 extern NSString * MAPref_ShowUnreadArticlesInBold;
-extern NSString * MAPref_FolderFont;
 extern NSString * MAPref_CachedFolderID;
 extern NSString * MAPref_DefaultDatabase;
 extern NSString * MAPref_DownloadsFolder;

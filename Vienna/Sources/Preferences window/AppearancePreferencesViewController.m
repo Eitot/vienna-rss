@@ -42,7 +42,6 @@ NSInteger availableMinimumFontSizes[] = { 9, 10, 11, 12, 14, 18, 24 };
 
 - (void)viewDidLoad {
     NSNotificationCenter * nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self selector:@selector(handleReloadPreferences:) name:@"MA_Notify_FolderFontChange" object:nil];
     [nc addObserver:self selector:@selector(handleReloadPreferences:) name:@"MA_Notify_ArticleListFontChange" object:nil];
     [nc addObserver:self selector:@selector(handleReloadPreferences:) name:kMA_Notify_MinimumFontSizeChange object:nil];
     [nc addObserver:self selector:@selector(handleReloadPreferences:) name:@"MA_Notify_PreferenceChange" object:nil];
@@ -71,8 +70,7 @@ NSInteger availableMinimumFontSizes[] = { 9, 10, 11, 12, 14, 18, 24 };
     
     // Populate the drop downs with the font names and sizes
     [self selectUserDefaultFont:prefs.articleListFont size:prefs.articleListFontSize control:articleFontSample];
-    [self selectUserDefaultFont:prefs.folderListFont size:prefs.folderListFontSize control:folderFontSample];
-    
+
     // Show folder images option
     showFolderImagesButton.state = prefs.showFolderImages ? NSControlStateValueOn : NSControlStateValueOff;
     
@@ -140,22 +138,6 @@ NSInteger availableMinimumFontSizes[] = { 9, 10, 11, 12, 14, 18, 24 };
     fontPanel.enabled = YES;
 }
 
-/* selectFolderFont
- * Bring up the standard font selector for the folder font.
- */
--(IBAction)selectFolderFont:(id)sender
-{
-    Preferences * prefs = [Preferences standardPreferences];
-    NSFontManager * fontManager = NSFontManager.sharedFontManager;
-    fontManager.target = self;
-    fontManager.action = @selector(changeFolderFont:);
-    
-    NSFontPanel *fontPanel = [fontManager fontPanel:YES];
-    [fontPanel setPanelFont:[NSFont fontWithName:prefs.folderListFont size:prefs.folderListFontSize] isMultiple:NO];
-    [fontPanel orderFront:self];
-    fontPanel.enabled = YES;
-}
-
 /* changeArticleFont
  * Respond to changes to the article font.
  */
@@ -167,19 +149,6 @@ NSInteger availableMinimumFontSizes[] = { 9, 10, 11, 12, 14, 18, 24 };
     prefs.articleListFont = font.fontName;
     prefs.articleListFontSize = font.pointSize;
     [self selectUserDefaultFont:prefs.articleListFont size:prefs.articleListFontSize control:articleFontSample];
-}
-
-/* changeFolderFont
- * Respond to changes to the folder font.
- */
--(IBAction)changeFolderFont:(id)sender
-{
-    Preferences * prefs = [Preferences standardPreferences];
-    NSFont * font = [NSFont fontWithName:prefs.folderListFont size:prefs.folderListFontSize];
-    font = [sender convertFont:font];
-    prefs.folderListFont = font.fontName;
-    prefs.folderListFontSize = font.pointSize;
-    [self selectUserDefaultFont:prefs.folderListFont size:prefs.folderListFontSize control:folderFontSample];
 }
 
 /* dealloc

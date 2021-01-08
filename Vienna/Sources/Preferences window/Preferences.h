@@ -60,7 +60,6 @@
 	NSString * stylesFolder;
 	NSString * pluginsFolder;
 	NSString * feedSourcesFolder;
-	NSFont * folderFont;
 	NSFont * articleFont;
 	NSArray * articleSortDescriptors;
 	SearchMethod * searchMethod;
@@ -161,10 +160,6 @@ extern NSString * const kMA_Notify_UseWebPluginsChange;
 @property (nonatomic, copy) NSString *displayStyle;
 -(void)setDisplayStyle:(NSString *)newStyle withNotification:(BOOL)flag;
 @property (nonatomic) CGFloat textSizeMultiplier;
-
-// Folder list font
-@property (nonatomic, copy) NSString *folderListFont;
-@property (nonatomic) NSInteger folderListFontSize;
 
 // Article list font
 @property (nonatomic, copy) NSString *articleListFont;

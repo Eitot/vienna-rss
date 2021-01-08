@@ -37,8 +37,6 @@
 
 @property (nonatomic, readonly, copy) NSArray *archiveState;
 @property (nonatomic) TreeNode *rootNode;
-@property (nonatomic) NSFont *cellFont;
-@property (nonatomic) NSFont *boldCellFont;
 @property (nonatomic) NSImage *folderErrorImage;
 @property (nonatomic) BOOL blockSelectionHandler;
 @property (nonatomic) BOOL canRenameFolders;
@@ -95,9 +93,6 @@
 	// Folder image
 	self.folderErrorImage = [NSImage imageNamed:@"folderError"];
     self.folderErrorImage.accessibilityDescription = NSLocalizedString(@"Error", nil);
-	
-	// Create and set whatever font we're using for the folders
-	[self setFolderListFont];
 
 	// Allow a second click in a node to edit the node
 	self.outlineView.action = @selector(handleSingleClick:);
@@ -136,7 +131,6 @@
 	[nc addObserver:self selector:@selector(handleFolderNameChange:) name:@"MA_Notify_FolderNameChanged" object:nil];
 	[nc addObserver:self selector:@selector(handleFolderAdded:) name:@"MA_Notify_FolderAdded" object:nil];
 	[nc addObserver:self selector:@selector(handleFolderDeleted:) name:databaseDidDeleteFolderNotification object:nil];
-	[nc addObserver:self selector:@selector(handleFolderFontChange:) name:@"MA_Notify_FolderFontChange" object:nil];
 	[nc addObserver:self selector:@selector(handleShowFolderImagesChange:) name:@"MA_Notify_ShowFolderImages" object:nil];
 	[nc addObserver:self selector:@selector(handleAutoSortFoldersTreeChange:) name:@"MA_Notify_AutoSortFoldersTreeChange" object:nil];
     [nc addObserver:self selector:@selector(handleOpenReaderFolderChange:) name:@"MA_Notify_OpenReaderFolderChange" object:nil];
@@ -189,33 +183,6 @@
     // No need to sync with OpenReader server because this is triggered when
     // folder layout has changed at server level. Making a sync call would be redundant.
     [self moveFolders:nc.object withGoogleSync:NO];
-}
-
-/* handleFolderFontChange
- * Called when the user changes the folder font and/or size in the Preferences
- */
--(void)handleFolderFontChange:(NSNotification *)nc
-{
-	[self setFolderListFont];
-	[self.outlineView reloadData];
-}
-
-/* setFolderListFont
- * Creates or updates the fonts used by the article list. The folder
- * list isn't automatically refreshed afterward - call reloadData for that.
- */
--(void)setFolderListFont
-{
-	NSInteger height;
-
-
-	Preferences * prefs = [Preferences standardPreferences];
-	self.cellFont = [NSFont fontWithName:prefs.folderListFont size:prefs.folderListFontSize];
-	self.boldCellFont = [[NSFontManager sharedFontManager] convertWeight:YES ofFont:self.cellFont];
-
-	height = [APPCONTROLLER.layoutManager defaultLineHeightForFont:self.boldCellFont];
-	self.outlineView.rowHeight = height + 5;
-	self.outlineView.intercellSpacing = NSMakeSize(10, 2);
 }
 
 /* reloadDatabase
@@ -975,13 +942,6 @@
                 myInfo[NSForegroundColorAttributeName] = NSColor.secondaryLabelColor;
             } else {
                 myInfo[NSForegroundColorAttributeName] = NSColor.labelColor;
-        }
-        // Set the font
-        if (folder.unreadCount ||  (folder.childUnreadCount && ![outlineView isItemExpanded:item])) {
-            myInfo[NSFontAttributeName] = self.boldCellFont;
-        }
-        else {
-            myInfo[NSFontAttributeName] = self.cellFont;
         }
         
         // Use the auxiliary position of the feed item to show

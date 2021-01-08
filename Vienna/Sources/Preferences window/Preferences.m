@@ -180,7 +180,6 @@ static Preferences * _standardPreferences = nil;
 		useJavaScript = [self boolForKey:MAPref_UseJavaScript];
         useWebPlugins = [self boolForKey:MAPref_UseWebPlugins];
 		showAppInStatusBar = [self boolForKey:MAPref_ShowAppInStatusBar];
-		folderFont = [NSUnarchiver unarchiveObjectWithData:[userPrefs objectForKey:MAPref_FolderFont]];
 		articleFont = [NSUnarchiver unarchiveObjectWithData:[userPrefs objectForKey:MAPref_ArticleListFont]];
 		downloadFolder = [userPrefs valueForKey:MAPref_DownloadsFolder];
 		shouldSaveFeedSource = [self boolForKey:MAPref_ShouldSaveFeedSource];
@@ -239,7 +238,6 @@ static Preferences * _standardPreferences = nil;
 	// Set the preference defaults
 	NSMutableDictionary * defaultValues = [[NSMutableDictionary alloc] init];
 	NSData * defaultArticleListFont = [NSArchiver archivedDataWithRootObject:[NSFont fontWithName:@"LucidaGrande" size:11.0]];
-	NSData * defaultFolderFont = [NSArchiver archivedDataWithRootObject:[NSFont fontWithName:@"LucidaGrande" size:11.0]];
 	NSData * defaultArticleSortDescriptors = [NSArchiver archivedDataWithRootObject:@[]];
 	
 	NSNumber * boolNo = @NO;
@@ -249,7 +247,6 @@ static Preferences * _standardPreferences = nil;
 	defaultValues[MAPref_CheckForUpdatedArticles] = boolNo;
 	defaultValues[MAPref_ShowUnreadArticlesInBold] = boolYes;
 	defaultValues[MAPref_ArticleListFont] = defaultArticleListFont;
-	defaultValues[MAPref_FolderFont] = defaultFolderFont;
 	defaultValues[MAPref_CheckForNewArticlesOnStartup] = boolYes;
 	defaultValues[MAPref_CachedFolderID] = @1;
 	defaultValues[MAPref_SortColumn] = MA_Field_Date;
@@ -902,42 +899,6 @@ static Preferences * _standardPreferences = nil;
 		[self setObject:@(newValue) forKey:MAPref_ActiveTextSizeMultiplier];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"MA_Notify_StyleChange" object:nil];
 	}
-}
-
-/* folderListFont
- * Retrieve the name of the font used in the folder list
- */
--(NSString *)folderListFont
-{
-	return folderFont.fontName;
-}
-
-/* folderListFontSize
- * Retrieve the size of the font used in the folder list
- */
--(NSInteger)folderListFontSize
-{
-	return folderFont.pointSize;
-}
-
-/* setFolderListFont
- * Retrieve the name of the font used in the folder list
- */
--(void)setFolderListFont:(NSString *)newFontName
-{
-	folderFont = [NSFont fontWithName:newFontName size:self.folderListFontSize];
-	[self setObject:[NSArchiver archivedDataWithRootObject:folderFont] forKey:MAPref_FolderFont];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"MA_Notify_FolderFontChange" object:folderFont];
-}
-
-/* setFolderListFontSize
- * Changes the size of the font used in the folder list.
- */
--(void)setFolderListFontSize:(NSInteger)newFontSize
-{
-	folderFont = [NSFont fontWithName:self.folderListFont size:newFontSize];
-	[self setObject:[NSArchiver archivedDataWithRootObject:folderFont] forKey:MAPref_FolderFont];
-	[[NSNotificationCenter defaultCenter] postNotificationName:@"MA_Notify_FolderFontChange" object:folderFont];
 }
 
 /* articleListFont
