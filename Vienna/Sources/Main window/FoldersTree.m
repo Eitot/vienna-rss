@@ -19,8 +19,6 @@
 //
 
 #import "FoldersTree.h"
-
-#import "ImageAndTextCell.h"
 #import "AppController.h"
 #import "Constants.h"
 #import "Preferences.h"
@@ -90,13 +88,9 @@
 -(void)initialiseFoldersTree
 {
 	NSTableColumn * tableColumn;
-	ImageAndTextCell * imageAndTextCell;
 
 	// Our folders have images next to them.
 	tableColumn = [self.outlineView tableColumnWithIdentifier:@"folderColumns"];
-	imageAndTextCell = [[ImageAndTextCell alloc] init];
-	[imageAndTextCell setEditable:YES];
-	tableColumn.dataCell = imageAndTextCell;
 
 	// Folder image
 	self.folderErrorImage = [NSImage imageNamed:@"folderError"];
@@ -870,16 +864,17 @@
  * selection to whichever node is under the cursor so the context between
  * the menu items and the node is made clear.
  */
--(void)outlineView:(FolderView *)olv menuWillAppear:(NSEvent *)theEvent
-{
-	NSInteger row = [olv rowAtPoint:[olv convertPoint:theEvent.locationInWindow fromView:nil]];
+-(void)outlineView:(FolderView *)outlineView menuWillAppear:(NSEvent *)theEvent {
+	NSInteger row = [outlineView rowAtPoint:[outlineView convertPoint:theEvent.locationInWindow fromView:nil]];
 	if (row >= 0)
 	{
 		// Select the row under the cursor if it isn't already selected
-		if (olv.numberOfSelectedRows <= 1)
-			[olv selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+		if (outlineView.numberOfSelectedRows <= 1)
+			[outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
 	}
 }
+
+// MARK: - Outline-view data source
 
 /* isItemExpandable
  * Tell the outline view if the specified item can be expanded. The answer is
@@ -899,8 +894,9 @@
 -(NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
 {
 	TreeNode * node = (TreeNode *)item;
-	if (node == nil)
+    if (node == nil) {
 		node = self.rootNode;
+    }
 	return node.countOfChildren;
 }
 
@@ -910,10 +906,13 @@
 -(id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item
 {
 	TreeNode * node = (TreeNode *)item;
-	if (node == nil)
+    if (node == nil) {
 		node = self.rootNode;
+    }
 	return [node childByIndex:index];
 }
+
+// MARK: - Outline-view delegate
 
 /* outlineView:tooltipForCell:rect:tableColumn:item:mouseLocation: [delegate]
  * For items that have counts, we show a tooltip that aggregates the counts.
@@ -923,7 +922,7 @@
 	TreeNode * node = (TreeNode *)item;
 	if (self.useToolTips && node != nil)
 	{
-		if (node.folder.nonPersistedFlags & VNAFolderFlagError)
+        if (node.folder.nonPersistedFlags & VNAFolderFlagError) {
 			return NSLocalizedString(@"An error occurred when this feed was last refreshed", nil);
 		NSInteger unreadCount;
 		if (node.folder.childUnreadCount) {
@@ -934,109 +933,98 @@
 		if (unreadCount) {
 			return [NSString stringWithFormat:NSLocalizedString(@"%d unread articles", nil), (int)unreadCount];
 		}
+        }
 	}
 	return nil;
 }
 
-/* objectValueForTableColumn
- * Returns the actual string that is displayed in the cell. Folders that have child folders with unread
- * articles show the aggregate unread article count.
- */
--(id)outlineView:(NSOutlineView *)olv objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item
-{
-	TreeNode * node = (TreeNode *)item;
-	if (node == nil)
-		node = self.rootNode;
-
-	static NSDictionary * info = nil;
-	if (info == nil)
-	{
-		NSMutableParagraphStyle * style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-		style.lineBreakMode = NSLineBreakByTruncatingTail;
-		style.tighteningFactorForTruncation = 0.0;
-		style.alignment = NSTextAlignmentLeft;
-		info = @{NSParagraphStyleAttributeName: style};
-	}
-
-	Folder * folder = node.folder;
-    NSMutableDictionary * myInfo = [NSMutableDictionary dictionaryWithDictionary:info];
-    if (folder.isUnsubscribed) {
-        myInfo[NSForegroundColorAttributeName] = NSColor.secondaryLabelColor;
-    } else {
-		myInfo[NSForegroundColorAttributeName] = NSColor.labelColor;
-    }
-	// Set the font
-	if (folder.unreadCount ||  (folder.childUnreadCount && ![olv isItemExpanded:item]))
-		myInfo[NSFontAttributeName] = self.boldCellFont;
-	else
-		myInfo[NSFontAttributeName] = self.cellFont;
-	
-	return [[NSAttributedString alloc] initWithString:node.nodeName attributes:myInfo];
-}
 
 /* willDisplayCell
  * Hook before a cell is displayed to set the correct image for that cell. We use this to show the folder
  * in normal or bold face depending on whether or not the folder (or sub-folders) have unread articles. This
  * is also the place where we set the folder image.
  */
--(void)outlineView:(NSOutlineView *)olv willDisplayCell:(NSCell *)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item 
-{
-	if ([tableColumn.identifier isEqualToString:@"folderColumns"]) 
-	{
-		TreeNode * node = (TreeNode *)item;
-		Folder * folder = node.folder;
-		ImageAndTextCell * realCell = (ImageAndTextCell *)cell;
 
-		// Use the auxiliary position of the feed item to show
-		// the refresh icon if the feed is being refreshed, or an
-		// error icon if the feed failed to refresh last time.
-		if (folder.isUpdating)
-		{
-			[realCell setAuxiliaryImage:nil];
-			[realCell setInProgress:YES];
-		}
-		else if (folder.isError)
-		{
-			realCell.auxiliaryImage = self.folderErrorImage;
-			[realCell setInProgress:NO];
-		}
-		else
-		{
-			[realCell setAuxiliaryImage:nil];
-			[realCell setInProgress:NO];
-		}
+//-(id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item {
+//    return (item == nil) ? @"/" : @"test folder";
+//}
 
-		if (folder.type == VNAFolderTypeSmart)  // Because if the search results contain unread articles we don't want the smart folder name to be bold.
-		{
-			[realCell clearCount];
-		}
-		else if (folder.unreadCount)
-		{
-			[realCell setCount:folder.unreadCount];
-		}
-		else if (folder.childUnreadCount && ![olv isItemExpanded:item])
-		{
-			[realCell setCount:folder.childUnreadCount];
-		}
-		else
-		{
-			[realCell clearCount];
-		}
-
-		// Only show folder images if the user prefers them.
-		Preferences * prefs = [Preferences standardPreferences];
-		realCell.image = (prefs.showFolderImages ? folder.image : [folder standardImage]);
-
-		[realCell setItem:item];
-	}
-}
-
-/* mainView
- * Return the main view of this class.
- */
--(NSView *)mainView
-{
-	return self.outlineView;
+-(NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
+    FolderTreeCell *folderTreeCell = nil;
+    if ([tableColumn.identifier isEqualToString:@"folderColumns"])
+    {
+        folderTreeCell = [outlineView makeViewWithIdentifier:@"FolderTreeCell" owner:self];
+        TreeNode * node = (TreeNode *)item;
+        if (node == nil) {
+            node = self.rootNode;
+        }
+        
+        static NSDictionary * info = nil;
+        if (info == nil)
+        {
+            NSMutableParagraphStyle * style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+            style.lineBreakMode = NSLineBreakByTruncatingTail;
+            style.tighteningFactorForTruncation = 0.0;
+		style.alignment = NSTextAlignmentLeft;
+            info = @{NSParagraphStyleAttributeName: style};
+        }
+        
+        Folder * folder = node.folder;
+        NSMutableDictionary * myInfo = [NSMutableDictionary dictionaryWithDictionary:info];
+        if (folder.isUnsubscribed) {
+                myInfo[NSForegroundColorAttributeName] = NSColor.secondaryLabelColor;
+            } else {
+                myInfo[NSForegroundColorAttributeName] = NSColor.labelColor;
+        }
+        // Set the font
+        if (folder.unreadCount ||  (folder.childUnreadCount && ![outlineView isItemExpanded:item])) {
+            myInfo[NSFontAttributeName] = self.boldCellFont;
+        }
+        else {
+            myInfo[NSFontAttributeName] = self.cellFont;
+        }
+        
+        // Use the auxiliary position of the feed item to show
+        // the refresh icon if the feed is being refreshed, or an
+        // error icon if the feed failed to refresh last time.
+        if (folder.isUpdating) {
+            folderTreeCell.inProgress = YES;
+        }
+        else if (folder.isError)
+        {
+            folderTreeCell.didError = YES;
+            folderTreeCell.inProgress = NO;
+        }
+        else
+        {
+            folderTreeCell.auxiliaryImageView.image = nil;
+            folderTreeCell.inProgress = NO;
+        }
+        
+        // Because if the search results contain unread articles we don't want the smart folder name to be bold.
+        if (folder.type == VNAFolderTypeSmart) {
+            folderTreeCell.unreadCount = 0;
+        }
+        else if (folder.unreadCount) {
+            folderTreeCell.unreadCount = folder.unreadCount;
+            //[folderTreeCell.unreadCountButton.layer setBackgroundColor:[NSColor colorForControlTint:[NSColor currentControlTint]].CGColor];
+        }
+        //        else if (folder.childUnreadCount && ![olv isItemExpanded:item])
+        //        {
+        //            [realCell setCount:folder.childUnreadCount];
+        //            [realCell setCountBackgroundColour:[NSColor colorForControlTint:[NSColor currentControlTint]]];
+        //        }
+        //        else
+        //        {
+        //            [realCell clearCount];
+        //        }
+        //
+        // Only show folder images if the user prefers them.
+        Preferences * prefs = [Preferences standardPreferences];
+        folderTreeCell.imageView.image = (prefs.showFolderImages ? folder.image : [folder standardImage]);
+        folderTreeCell.textField.attributedStringValue = [[NSAttributedString alloc] initWithString:node.nodeName attributes:myInfo];
+    }
+    return folderTreeCell;
 }
 
 /* outlineViewSelectionDidChange
