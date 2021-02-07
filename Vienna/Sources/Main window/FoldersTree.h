@@ -31,8 +31,6 @@
 -(void)initialiseFoldersTree;
 -(void)saveFolderSettings;
 -(void)updateAlternateMenuTitle;
--(void)updateFolder:(NSInteger)folderId recurseToParents:(BOOL)recurseToParents;
--(BOOL)canDeleteFolderAtRow:(NSInteger)row;
 -(BOOL)selectFolder:(NSInteger)folderId;
 -(void)renameFolder:(NSInteger)folderId;
 @property (nonatomic, readonly) NSInteger actualSelection;
@@ -44,7 +42,6 @@
 -(NSArray *)folders:(NSInteger)folderId;
 -(NSArray *)children:(NSInteger)folderId;
 @property (nonatomic, readonly, strong) NSView *mainView;
--(void)outlineViewWillBecomeFirstResponder;
 -(void)setSearch:(NSString *)string;
 
 @end

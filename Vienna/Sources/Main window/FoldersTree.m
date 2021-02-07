@@ -19,6 +19,7 @@
 //
 
 #import "FoldersTree.h"
+
 #import "AppController.h"
 #import "Constants.h"
 #import "Preferences.h"
@@ -42,32 +43,15 @@
 @property (nonatomic) BOOL canRenameFolders;
 @property (nonatomic) BOOL useToolTips;
 
--(void)setFolderListFont;
--(void)unarchiveState:(NSArray *)stateArray;
--(void)reloadDatabase:(NSArray *)stateArray;
--(BOOL)loadTree:(NSArray *)listOfFolders rootNode:(TreeNode *)node;
--(void)setManualSortOrderForNode:(TreeNode *)node;
--(void)handleDoubleClick:(id)sender;
--(void)handleAutoSortFoldersTreeChange:(NSNotification *)nc;
--(void)handleFolderAdded:(NSNotification *)nc;
--(void)handleFolderNameChange:(NSNotification *)nc;
--(void)handleFolderUpdate:(NSNotification *)nc;
--(void)handleFolderDeleted:(NSNotification *)nc;
--(void)handleShowFolderImagesChange:(NSNotification *)nc;
--(void)handleFolderFontChange:(NSNotification *)nc;
--(void)reloadFolderItem:(id)node reloadChildren:(BOOL)flag;
--(void)expandToParent:(TreeNode *)node;
--(BOOL)copyTableSelection:(NSArray *)items toPasteboard:(NSPasteboard *)pboard;
--(BOOL)moveFolders:(NSArray *)array withGoogleSync:(BOOL)sync;
--(void)enableFoldersRenaming:(id)sender;
--(void)enableFoldersRenamingAfterDelay;
-
 @end
 
 @implementation FoldersTree
 
-- (instancetype)init {
-	if (self = [super init]) {
+- (instancetype)init
+{
+    self = [super init];
+
+	if (self) {
 		// Root node is never displayed since we always display from
 		// the second level down. It simply provides a convenient way
 		// of containing the other nodes.
@@ -78,6 +62,11 @@
 	}
 
 	return self;
+}
+
+- (void)dealloc
+{
+    [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 
 /* initialiseFoldersTree
@@ -823,6 +812,67 @@
 		[self.outlineView reloadItem:node reloadChildren:YES];
 }
 
+/* renameFolder
+ * Begin in-place editing of the selected folder name.
+ */
+-(void)renameFolder:(NSInteger)folderId
+{
+    TreeNode * node = [self.rootNode nodeFromID:folderId];
+    NSInteger rowIndex = [self.outlineView rowForItem:node];
+
+    if (rowIndex != -1)
+    {
+        [self.outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)rowIndex] byExtendingSelection:NO];
+        [self.outlineView editColumn:[self.outlineView columnWithIdentifier:@"folderColumns"] row:rowIndex withEvent:nil select:YES];
+    }
+}
+
+/* renameFolderByTimer
+ * If no disabling events have occurred during the timer interval, rename the folder.
+ */
+-(void)renameFolderByTimer:(id)sender
+{
+    if (self.canRenameFolders)
+    {
+        [self renameFolder:((TreeNode *)[sender userInfo]).nodeId];
+    }
+}
+
+/* enableFoldersRenaming
+ * Enable the renaming of folders.
+ */
+-(void)enableFoldersRenaming:(id)sender
+{
+    self.canRenameFolders = YES;
+}
+
+/* enableFoldersRenamingAfterDelay
+ * Set a timer to enable renaming of folders.
+ */
+-(void)enableFoldersRenamingAfterDelay
+{
+    self.canRenameFolders = NO;
+    [NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval] target:self selector:@selector(enableFoldersRenaming:) userInfo:nil repeats:NO];
+}
+
+/* outlineViewWillBecomeFirstResponder
+ * When outline view becomes first responder, bring the article view to the front,
+ * and prevent immediate folder renaming.
+ */
+-(void)outlineViewWillBecomeFirstResponder
+{
+    [self.controller.browser setActiveTabToPrimaryTab];
+    [self enableFoldersRenamingAfterDelay];
+}
+
+/* mainView
+ * Return the main view of this class.
+ */
+-(NSView *)mainView
+{
+    return self.outlineView;
+}
+
 /* menuWillAppear
  * Called when the popup menu is opened on the folder list. We move the
  * selection to whichever node is under the cursor so the context between
@@ -901,17 +951,6 @@
 	}
 	return nil;
 }
-
-
-/* willDisplayCell
- * Hook before a cell is displayed to set the correct image for that cell. We use this to show the folder
- * in normal or bold face depending on whether or not the folder (or sub-folders) have unread articles. This
- * is also the place where we set the folder image.
- */
-
-//-(id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item {
-//    return (item == nil) ? @"/" : @"test folder";
-//}
 
 -(NSView *)outlineView:(NSOutlineView *)outlineView viewForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
     FolderTreeCell *folderTreeCell = nil;
@@ -996,59 +1035,6 @@
 		TreeNode * node = [self.outlineView itemAtRow:self.outlineView.selectedRow];
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"MA_Notify_FolderSelectionChange" object:node];
 	}
-}
-
-/* renameFolder
- * Begin in-place editing of the selected folder name.
- */
--(void)renameFolder:(NSInteger)folderId
-{	
-	TreeNode * node = [self.rootNode nodeFromID:folderId];
-	NSInteger rowIndex = [self.outlineView rowForItem:node];
-		
-	if (rowIndex != -1)
-	{
-		[self.outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)rowIndex] byExtendingSelection:NO];
-		[self.outlineView editColumn:[self.outlineView columnWithIdentifier:@"folderColumns"] row:rowIndex withEvent:nil select:YES];
-	}
-}
-
-/* renameFolderByTimer
- * If no disabling events have occurred during the timer interval, rename the folder.
- */
--(void)renameFolderByTimer:(id)sender
-{
-	if (self.canRenameFolders)
-	{
-		[self renameFolder:((TreeNode *)[sender userInfo]).nodeId];
-	}
-}
-
-/* enableFoldersRenaming
- * Enable the renaming of folders.
- */
--(void)enableFoldersRenaming:(id)sender
-{
-	self.canRenameFolders = YES;
-}
-
-/* enableFoldersRenamingAfterDelay
- * Set a timer to enable renaming of folders.
- */
--(void)enableFoldersRenamingAfterDelay
-{
-	self.canRenameFolders = NO;
-	[NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval] target:self selector:@selector(enableFoldersRenaming:) userInfo:nil repeats:NO];
-}
-
-/* outlineViewWillBecomeFirstResponder
- * When outline view becomes first responder, bring the article view to the front,
- * and prevent immediate folder renaming.
- */
--(void)outlineViewWillBecomeFirstResponder
-{
-	[self.controller.browser setActiveTabToPrimaryTab];
-	[self enableFoldersRenamingAfterDelay];
 }
 
 /* shouldEditTableColumn [delegate]
@@ -1539,11 +1525,4 @@
     self.outlineView.filterPredicate = predicate;
 }
 
-/* dealloc
- * Clean up and release resources.
- */
--(void)dealloc
-{
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-}
 @end

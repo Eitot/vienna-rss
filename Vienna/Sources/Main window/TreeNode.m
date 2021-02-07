@@ -33,10 +33,10 @@
 	if ((self = [super init]) != nil)
  	{
 		NSInteger folderId = (theFolder ? theFolder.itemId : VNAFolderTypeRoot);
-		folder = theFolder;
-		parentNode = parent;
-		canHaveChildren = childflag;
-		nodeId = folderId;
+		_folder = theFolder;
+		_parentNode = parent;
+		_canHaveChildren = childflag;
+		_nodeId = folderId;
 		if (parent != nil)
 		{
 			[parent addChild:self atIndex:insertIndex];
@@ -59,7 +59,7 @@
  */
 -(void)addChild:(TreeNode *)child atIndex:(NSInteger)insertIndex
 {
-	NSAssert(canHaveChildren, @"Trying to add children to a node that cannot have children (canHaveChildren==NO)");
+	NSAssert(_canHaveChildren, @"Trying to add children to a node that cannot have children (canHaveChildren==NO)");
 	NSUInteger count = children.count;
 	NSInteger sortMethod = [Preferences standardPreferences].foldersTreeSortMethod;
 
@@ -165,19 +165,6 @@
 	return nil;
 }
 
-/* childByName
- * Returns the TreeNode for the specified named child
- */
--(TreeNode *)childByName:(NSString *)childName
-{
-	for (TreeNode * node in children)
-	{
-		if ([childName isEqual:node.nodeName])
-			return node;
-	}
-	return nil;
-}
-
 /* childByIndex
  * Returns the TreeNode for the child at the specified index offset. (Note that we don't
  * assert index here. The objectAtIndex function will take care of that for us.)
@@ -195,31 +182,15 @@
 	return [children indexOfObject:node];
 }
 
-/* setParentNode
- * Sets a treenode's parent
- */
--(void)setParentNode:(TreeNode *)parent
-{
-	parentNode = parent;
-}
-
-/* parentNode
- * Returns our parent node.
- */
--(TreeNode *)parentNode
-{
-	return parentNode;
-}
-
 /* nextSibling
  * Returns the next child.
  */
 -(TreeNode *)nextSibling
 {
-	NSInteger childIndex = [parentNode indexOfChild:self];
-	if (childIndex == NSNotFound || ++childIndex >= parentNode.countOfChildren)
+	NSInteger childIndex = [_parentNode indexOfChild:self];
+	if (childIndex == NSNotFound || ++childIndex >= _parentNode.countOfChildren)
 		return nil;
-	return [parentNode childByIndex:childIndex];
+	return [_parentNode childByIndex:childIndex];
 }
 
 /* firstChild
@@ -232,38 +203,6 @@
 	return children[0];
 }
 
-/* setNodeId
- * Sets a node's unique Id.
- */
--(void)setNodeId:(NSInteger)n
-{
-	nodeId = n;
-}
-
-/* nodeId
- * Returns the node's ID
- */
--(NSInteger)nodeId
-{
-	return nodeId;
-}
-
-/* setFolder
- * Sets the folder associated with this node.
- */
--(void)setFolder:(Folder *)newFolder
-{
-	folder = newFolder;
-}
-
-/* folder
- * Returns the folder associated with the node
- */
--(Folder *)folder
-{
-	return folder;
-}
-
 /* nodeName
  * Returns the node's name which is basically the name of the folder
  * associated with the node. If no folder is associated with this node
@@ -271,11 +210,11 @@
  */
 -(NSString *)nodeName
 {
-	if (folder != nil) {
-		if (folder.type == VNAFolderTypeOpenReader) {
-			return [NSString stringWithFormat:@"☁️ %@",folder.name];
+	if (_folder != nil) {
+		if (_folder.type == VNAFolderTypeOpenReader) {
+			return [NSString stringWithFormat:@"☁️ %@",_folder.name];
 		} else {
-			return folder.name;
+			return _folder.name;
 		}
 	} 
 	return @"";
@@ -287,25 +226,6 @@
 -(NSUInteger)countOfChildren
 {
 	return children.count;
-}
-
-/* setCanHaveChildren
- * Sets the flag which specifies whether or not this node can have
- * children. This is not the same as actually adding children. The
- * outline view sets the expand symbol based on whether or not a
- * node item is ever expandable.
- */
--(void)setCanHaveChildren:(BOOL)childFlag
-{
-	canHaveChildren = childFlag;
-}
-
-/* canHaveChildren
- * Returns whether or not this node can have children.
- */
--(BOOL)canHaveChildren
-{
-	return canHaveChildren;
 }
 
 /* description

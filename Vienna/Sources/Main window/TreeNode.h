@@ -23,11 +23,11 @@
 @class Folder;
 
 @interface TreeNode : NSObject {
-	TreeNode * parentNode;
+	TreeNode * _parentNode;
 	NSMutableArray * children;
-	Folder * folder;
-	NSInteger nodeId;
-	BOOL canHaveChildren;
+	Folder * _folder;
+	NSInteger _nodeId;
+	BOOL _canHaveChildren;
 }
 
 // Accessor functions
@@ -40,7 +40,6 @@
 -(void)removeChild:(TreeNode *)child andChildren:(BOOL)removeChildrenFlag;
 -(void)sortChildren:(NSInteger)sortMethod;
 @property (nonatomic, readonly, copy) NSString *nodeName;
--(TreeNode *)childByName:(NSString *)childName;
 -(TreeNode *)childByIndex:(NSInteger)index;
 -(NSInteger)indexOfChild:(TreeNode *)node;
 -(TreeNode *)nodeFromID:(NSInteger)n;
@@ -48,6 +47,5 @@
 @property (nonatomic) NSInteger nodeId;
 @property (nonatomic, readonly) NSUInteger countOfChildren;
 @property (nonatomic) BOOL canHaveChildren;
--(NSComparisonResult)folderNameCompare:(TreeNode *)otherObject;
 
 @end
