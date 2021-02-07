@@ -840,6 +840,27 @@
 	}
 }
 
+/* setSearch
+ * Set string to filter nodes by name, description, url
+ */
+-(void)setSearch:(NSString *)f {
+    NSString* tf = [f stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    if (tf.length == 0) {
+        self.outlineView.filterPredicate = nil;
+        return;
+    }
+
+    NSString *match = [NSString stringWithFormat:@"*%@*", tf];
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"folder.name like[cd] %@ OR folder.feedDescription like[cd] %@ OR folder.feedURL like[cd] %@", match, match, match];
+
+    if ([self.outlineView.filterPredicate.predicateFormat isEqualToString:predicate.predicateFormat]) {
+        return;
+    }
+
+    self.outlineView.filterPredicate = predicate;
+}
+
 // MARK: - Outline-view data source
 
 /* isItemExpandable
@@ -876,6 +897,437 @@
 		node = self.rootNode;
     }
 	return [node childByIndex:index];
+}
+
+/* validateDrop
+ * Called when something is being dragged over us. We respond with an NSDragOperation value indicating the
+ * feedback for the user given where we are.
+ */
+-(NSDragOperation)outlineView:(NSOutlineView*)olv validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
+{
+    NSPasteboard * pb = [info draggingPasteboard];
+    NSString * type = [pb availableTypeFromArray:@[MA_PBoardType_FolderList, MA_PBoardType_RSSSource, @"WebURLsWithTitlesPboardType", NSPasteboardTypeString]];
+    NSDragOperation dragType = ([type isEqualToString:MA_PBoardType_FolderList]) ? NSDragOperationMove : NSDragOperationCopy;
+
+    TreeNode * node = (TreeNode *)item;
+    BOOL isOnDropTypeProposal = index == NSOutlineViewDropOnItemIndex;
+
+    // Can't drop anything onto the trash folder.
+    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeTrash) {
+        return NSDragOperationNone;
+    }
+
+    // Can't drop anything onto the search folder.
+    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeSearch) {
+        return NSDragOperationNone;
+    }
+
+    // Can't drop anything on smart folders.
+    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeSmart) {
+        return NSDragOperationNone;
+    }
+
+    // Can always drop something on a group folder.
+    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeGroup) {
+        return dragType;
+    }
+
+    // For any other folder, can't drop anything ON them.
+    if (index == NSOutlineViewDropOnItemIndex) {
+        return NSDragOperationNone;
+    }
+    return NSDragOperationGeneric;
+}
+
+/* writeItems [delegate]
+ * Collect the selected folders ready for dragging.
+ */
+-(BOOL)outlineView:(NSOutlineView *)olv writeItems:(NSArray*)items toPasteboard:(NSPasteboard*)pboard
+{
+    return [self copyTableSelection:items toPasteboard:pboard];
+}
+
+/* acceptDrop
+ * Accept a drop on or between nodes either from within the folder view or from outside.
+ */
+-(BOOL)outlineView:(NSOutlineView *)olv acceptDrop:(id <NSDraggingInfo>)info item:(id)targetItem childIndex:(NSInteger)child
+{
+    __block NSInteger childIndex = child;
+    NSPasteboard * pb = [info draggingPasteboard];
+    NSString * type = [pb availableTypeFromArray:@[MA_PBoardType_FolderList, MA_PBoardType_RSSSource, @"WebURLsWithTitlesPboardType", NSPasteboardTypeString]];
+    TreeNode * node = targetItem ? (TreeNode *)targetItem : self.rootNode;
+
+    NSInteger parentId = node.nodeId;
+    if ((childIndex == NSOutlineViewDropOnItemIndex) || (childIndex < 0))
+        childIndex = 0;
+
+    // Check the type
+    if ([type isEqualToString:NSPasteboardTypeString])
+    {
+        // This is possibly a URL that we'll handle as a potential feed subscription. It's
+        // not our call to make though.
+        NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
+        [APPCONTROLLER createNewSubscription:[pb stringForType:type] underFolder:parentId afterChild:predecessorId];
+        return YES;
+    }
+    if ([type isEqualToString:MA_PBoardType_FolderList])
+    {
+        Database * db = [Database sharedManager];
+        NSArray * arrayOfSources = [pb propertyListForType:type];
+        NSInteger count = arrayOfSources.count;
+        NSInteger index;
+        NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
+
+        // Create an NSArray of triples (folderId, newParentId, predecessorId) that will be passed to moveFolders
+        // to do the actual move.
+        NSMutableArray * array = [[NSMutableArray alloc] initWithCapacity:count * 3];
+        NSInteger trashFolderId = db.trashFolderId;
+        for (index = 0; index < count; ++index)
+        {
+            NSInteger folderId = [arrayOfSources[index] integerValue];
+
+            // Don't allow the trash folder to move under a group folder, because the group folder could get deleted.
+            // Also, don't allow perverse moves.  We should probably do additional checking: not only whether the new parent
+            // is the folder itself but also whether the new parent is a subfolder.
+            if (((folderId == trashFolderId) && (node != self.rootNode)) || (folderId == parentId) || (folderId == predecessorId))
+                continue;
+            [array addObject:@(folderId)];
+            [array addObject:@(parentId)];
+            [array addObject:@(predecessorId)];
+            predecessorId = folderId;
+        }
+
+        // Do the move
+        BOOL result = [self moveFolders:array withGoogleSync:YES];
+        return result;
+    }
+    if ([type isEqualToString:MA_PBoardType_RSSSource])
+    {
+        Database * dbManager = [Database sharedManager];
+        NSArray * arrayOfSources = [pb propertyListForType:type];
+        NSInteger count = arrayOfSources.count;
+        NSInteger index;
+
+        // This is an RSS drag using the protocol defined by Ranchero for NetNewsWire. See
+        // http://ranchero.com/netnewswire/rssclipboard.php for more details.
+        //
+        __block NSInteger folderToSelect = -1;
+        for (index = 0; index < count; ++index)
+        {
+            NSDictionary * sourceItem = arrayOfSources[index];
+            NSString * feedTitle = [sourceItem valueForKey:@"sourceName"];
+            NSString * feedHomePage = [sourceItem valueForKey:@"sourceHomeURL"];
+            NSString * feedURL = [sourceItem valueForKey:@"sourceRSSURL"];
+            NSString * feedDescription = [sourceItem valueForKey:@"sourceDescription"];
+
+            if ((feedURL != nil) && [dbManager folderFromFeedURL:feedURL] == nil)
+            {
+                NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
+                NSInteger folderId = [dbManager addRSSFolder:feedTitle underParent:parentId afterChild:predecessorId subscriptionURL:feedURL];
+                if (feedDescription != nil) {
+                    [dbManager setDescription:feedDescription forFolder:folderId];
+                }
+                if (feedHomePage != nil) {
+                    [dbManager setHomePage:feedHomePage forFolder:folderId];
+                }
+                if (folderId > 0) {
+                    folderToSelect = folderId;
+                }
+                ++childIndex;
+            }
+        }
+
+        // If parent was a group, expand it now
+        if (parentId != VNAFolderTypeRoot)
+            [self.outlineView expandItem:[self.rootNode nodeFromID:parentId]];
+
+        // Select a new folder
+        if (folderToSelect > 0)
+            [self selectFolder:folderToSelect];
+
+        return YES;
+    }
+    if ([type isEqualToString:@"WebURLsWithTitlesPboardType"])
+    {
+        Database * dbManager = [Database sharedManager];
+        NSArray * webURLsWithTitles = [pb propertyListForType:type];
+        NSArray * arrayOfURLs = webURLsWithTitles[0];
+        NSArray * arrayOfTitles = webURLsWithTitles[1];
+        NSInteger count = arrayOfURLs.count;
+        NSInteger index;
+
+        __block NSInteger folderToSelect = -1;
+        for (index = 0; index < count; ++index)
+        {
+            NSString * feedTitle = arrayOfTitles[index];
+            NSString * feedURL = arrayOfURLs[index];
+            NSURL * draggedURL = [NSURL URLWithString:feedURL];
+            if ((draggedURL.scheme != nil) && [draggedURL.scheme isEqualToString:@"feed"])
+                feedURL = [NSString stringWithFormat:@"http:%@", draggedURL.resourceSpecifier];
+
+            if ([dbManager folderFromFeedURL:feedURL] == nil)
+            {
+                NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
+                NSInteger newFolderId = [dbManager addRSSFolder:feedTitle underParent:parentId afterChild:predecessorId subscriptionURL:feedURL];
+                if (newFolderId > 0) {
+                    folderToSelect = newFolderId;
+                }
+                ++childIndex;
+            }
+        }
+
+        // If parent was a group, expand it now
+        if (parentId != VNAFolderTypeRoot)
+            [self.outlineView expandItem:[self.rootNode nodeFromID:parentId]];
+
+        // Select a new folder
+        if (folderToSelect > 0)
+            [self selectFolder:folderToSelect];
+
+        return YES;
+    }
+    return NO;
+}
+
+// MARK: Helper methods
+
+/* copyTableSelection
+ * This is the common copy selection code. We build an array of dictionary entries each of
+ * which include details of each selected folder in the standard RSS item format defined by
+ * Ranchero NetNewsWire. See http://ranchero.com/netnewswire/rssclipboard.php for more details.
+ */
+-(BOOL)copyTableSelection:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
+{
+    NSInteger count = items.count;
+    NSMutableArray * externalDragData = [NSMutableArray arrayWithCapacity:count];
+    NSMutableArray * internalDragData = [NSMutableArray arrayWithCapacity:count];
+    NSMutableString * stringDragData = [NSMutableString string];
+    NSMutableArray * arrayOfURLs = [NSMutableArray arrayWithCapacity:count];
+    NSMutableArray * arrayOfTitles = [NSMutableArray arrayWithCapacity:count];
+    NSInteger index;
+
+    // We'll create the types of data on the clipboard.
+    [pboard declareTypes:@[MA_PBoardType_FolderList, MA_PBoardType_RSSSource, @"WebURLsWithTitlesPboardType", NSPasteboardTypeString] owner:self];
+
+    // Create an array of NSNumber objects containing the selected folder IDs.
+    NSInteger countOfItems = 0;
+    for (index = 0; index < count; ++index)
+    {
+        TreeNode * node = items[index];
+        Folder * folder = node.folder;
+
+        if (folder.type == VNAFolderTypeRSS
+            || folder.type == VNAFolderTypeOpenReader
+            || folder.type == VNAFolderTypeSmart
+            || folder.type == VNAFolderTypeGroup
+            || folder.type == VNAFolderTypeSearch
+            || folder.type == VNAFolderTypeTrash) {
+            [internalDragData addObject:@(node.nodeId)];
+            ++countOfItems;
+        }
+
+        if (folder.type == VNAFolderTypeRSS
+            || folder.type == VNAFolderTypeOpenReader) {
+            NSString * feedURL = folder.feedURL;
+
+            NSMutableDictionary * dict = [NSMutableDictionary dictionary];
+            [dict setValue:folder.name forKey:@"sourceName"];
+            [dict setValue:folder.description forKey:@"sourceDescription"];
+            [dict setValue:feedURL forKey:@"sourceRSSURL"];
+            [dict setValue:folder.homePage forKey:@"sourceHomeURL"];
+            [externalDragData addObject:dict];
+
+            [stringDragData appendFormat:@"%@\n", feedURL];
+
+            NSURL * safariURL = [NSURL URLWithString:feedURL];
+            if (safariURL != nil && !safariURL.fileURL)
+            {
+                if (![@"feed" isEqualToString:safariURL.scheme])
+                {
+                    feedURL = [NSString stringWithFormat:@"feed:%@", safariURL.resourceSpecifier];
+                }
+                [arrayOfURLs addObject:feedURL];
+                [arrayOfTitles addObject:folder.name];
+            }
+        }
+    }
+
+    // Copy the data to the pasteboard
+    [pboard setPropertyList:externalDragData forType:MA_PBoardType_RSSSource];
+    [pboard setString:stringDragData forType:NSPasteboardTypeString];
+    [pboard setPropertyList:internalDragData forType:MA_PBoardType_FolderList];
+    [pboard setPropertyList:@[arrayOfURLs, arrayOfTitles] forType:@"WebURLsWithTitlesPboardType"];
+    return countOfItems > 0;
+}
+
+/* moveFoldersUndo
+ * Undo handler to move folders back.
+ */
+-(void)moveFoldersUndo:(id)anObject
+{
+    [self moveFolders:(NSArray *)anObject withGoogleSync:YES];
+}
+
+/* moveFolders
+ * Reparent folders using the information in the specified array. The array consists of
+ * a collection of NSNumber triples: the first number is the ID of the folder to move,
+ * the second number is the ID of the parent to which the folder should be moved,
+ * the third number is the ID of the folder's new predecessor sibling.
+ */
+-(BOOL)moveFolders:(NSArray *)array withGoogleSync:(BOOL)sync
+{
+    NSAssert(([array count] % 3) == 0, @"Incorrect number of items in array passed to moveFolders");
+    NSInteger count = array.count;
+    __block NSInteger index = 0;
+
+    // Need to create a running undo array
+    NSMutableArray * undoArray = [[NSMutableArray alloc] initWithCapacity:count];
+
+    // Internal drag and drop so we're just changing the parent IDs around. One thing
+    // we have to watch for is to make sure that we don't re-parent to a subordinate
+    // folder.
+    Database * dbManager = [Database sharedManager];
+    BOOL autoSort = [Preferences standardPreferences].foldersTreeSortMethod != VNAFolderSortManual;
+
+    while (index < count)
+    {
+        NSInteger folderId = [array[index++] integerValue];
+        NSInteger newParentId = [array[index++] integerValue];
+        NSInteger newPredecessorId = [array[index++] integerValue];
+        Folder * folder = [dbManager folderFromID:folderId];
+        NSInteger oldParentId = folder.parentId;
+
+        TreeNode * node = [self.rootNode nodeFromID:folderId];
+        TreeNode * oldParent = [self.rootNode nodeFromID:oldParentId];
+        NSInteger oldChildIndex = [oldParent indexOfChild:node];
+        NSInteger oldPredecessorId = (oldChildIndex > 0) ? [oldParent childByIndex:(oldChildIndex - 1)].nodeId : 0;
+        TreeNode * newParent = [self.rootNode nodeFromID:newParentId];
+        TreeNode * newPredecessor = [newParent nodeFromID:newPredecessorId];
+        if ((newPredecessor == nil) || (newPredecessor == newParent))
+            newPredecessorId = 0;
+        NSInteger newChildIndex = (newPredecessorId > 0) ? ([newParent indexOfChild:newPredecessor] + 1) : 0;
+
+        if (newParentId == oldParentId)
+        {
+            // With automatic sorting, moving under the same parent is impossible.
+            if (autoSort) {
+                continue;
+            }
+            // No need to move if destination is the same as origin.
+            if (newPredecessorId == oldPredecessorId) {
+                continue;
+            }
+            // Adjust the index for the removal of the old child.
+            if (newChildIndex > oldChildIndex) {
+                --newChildIndex;
+            }
+
+        }
+        else
+        {
+            if (!newParent.canHaveChildren)
+                [newParent setCanHaveChildren:YES];
+            if ([dbManager setParent:newParentId forFolder:folderId])
+            {
+                if (sync && folder.type == VNAFolderTypeOpenReader)
+                {
+                    OpenReader * myReader = [OpenReader sharedManager];
+                    // remove old label
+                    NSString * folderName = [dbManager folderFromID:oldParentId].name;
+                    [myReader setFolderLabel:folderName forFeed:folder.remoteId set:FALSE];
+                    // add new label
+                    folderName = [dbManager folderFromID:newParentId].name;
+                    if (folderName) {
+                        [myReader setFolderLabel:folderName forFeed:folder.remoteId set:TRUE];
+                    }
+                }
+            }
+            else
+                continue;
+        }
+
+        if (!autoSort)
+        {
+            if (oldPredecessorId > 0)
+            {
+                if (![dbManager setNextSibling:folder.nextSiblingId forFolder:oldPredecessorId])
+                    continue;
+            }
+            else
+            {
+                if (![dbManager setFirstChild:folder.nextSiblingId forFolder:oldParentId])
+                    continue;
+            }
+        }
+
+        [oldParent removeChild:node andChildren:NO];
+        [newParent addChild:node atIndex:newChildIndex];
+
+        // Put at beginning of undoArray in order to undo moves in reverse order.
+        [undoArray insertObject:@(folderId) atIndex:0u];
+        [undoArray insertObject:@(oldParentId) atIndex:1u];
+        [undoArray insertObject:@(oldPredecessorId) atIndex:2u];
+
+        if (!autoSort)
+        {
+            if (newPredecessorId > 0)
+            {
+                if (![dbManager setNextSibling:[dbManager folderFromID:newPredecessorId].nextSiblingId
+                                     forFolder:folderId]) {
+                    continue;
+                }
+                [dbManager setNextSibling:folderId forFolder:newPredecessorId];
+            }
+            else
+            {
+                NSInteger oldFirstChildId = (newParent == self.rootNode) ? dbManager.firstFolderId : newParent.folder.firstChildId;
+                if (![dbManager setNextSibling:oldFirstChildId forFolder:folderId])
+                    continue;
+                [dbManager setFirstChild:folderId forFolder:newParentId];
+            }
+        }
+    }
+
+    // If undo array is empty, then nothing has been moved.
+    if (undoArray.count == 0u)
+    {
+        return NO;
+    }
+
+    // Set up to undo this action
+    NSUndoManager * undoManager = NSApp.mainWindow.undoManager;
+    [undoManager registerUndoWithTarget:self selector:@selector(moveFoldersUndo:) object:undoArray];
+    [undoManager setActionName:NSLocalizedString(@"Move Folders", nil)];
+
+    // Make the outline control reload its data
+    [self.outlineView reloadData];
+
+    // If any parent was a collapsed group, expand it now
+    for (index = 0; index < count; index += 2)
+    {
+        NSInteger newParentId = [array[++index] integerValue];
+        if (newParentId != VNAFolderTypeRoot)
+        {
+            TreeNode * parentNode = [self.rootNode nodeFromID:newParentId];
+            if (![self.outlineView isItemExpanded:parentNode] && [self.outlineView isExpandable:parentNode])
+                [self.outlineView expandItem:parentNode];
+        }
+    }
+
+    // Properly set selection back to the original items. This has to be done after the
+    // refresh so that rowForItem returns the new positions.
+    NSMutableIndexSet * selIndexSet = [[NSMutableIndexSet alloc] init];
+    NSInteger selRowIndex = 9999;
+    for (index = 0; index < count; index += 2)
+    {
+        NSInteger folderId = [array[index++] integerValue];
+        NSInteger rowIndex = [self.outlineView rowForItem:[self.rootNode nodeFromID:folderId]];
+        selRowIndex = MIN(selRowIndex, rowIndex);
+        [selIndexSet addIndex:rowIndex];
+    }
+    [self.outlineView scrollRowToVisible:selRowIndex];
+    [self.outlineView selectRowIndexes:selIndexSet byExtendingSelection:NO];
+    return YES;
 }
 
 // MARK: - Outline-view delegate
@@ -1025,456 +1477,6 @@
             }
         }
 	}
-}
-
-/* validateDrop
- * Called when something is being dragged over us. We respond with an NSDragOperation value indicating the
- * feedback for the user given where we are.
- */
--(NSDragOperation)outlineView:(NSOutlineView*)olv validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index
-{
-	NSPasteboard * pb = [info draggingPasteboard]; 
-	NSString * type = [pb availableTypeFromArray:@[MA_PBoardType_FolderList, MA_PBoardType_RSSSource, @"WebURLsWithTitlesPboardType", NSPasteboardTypeString]]; 
-	NSDragOperation dragType = ([type isEqualToString:MA_PBoardType_FolderList]) ? NSDragOperationMove : NSDragOperationCopy;
-
-	TreeNode * node = (TreeNode *)item;
-	BOOL isOnDropTypeProposal = index == NSOutlineViewDropOnItemIndex;
-
-	// Can't drop anything onto the trash folder.
-    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeTrash) {
-		return NSDragOperationNone;
-    }
-
-	// Can't drop anything onto the search folder.
-    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeSearch) {
-		return NSDragOperationNone;
-    }
-	
-	// Can't drop anything on smart folders.
-    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeSmart) {
-		return NSDragOperationNone;
-    }
-	
-	// Can always drop something on a group folder.
-    if (isOnDropTypeProposal && node != nil && node.folder.type == VNAFolderTypeGroup) {
-		return dragType;
-    }
-	
-	// For any other folder, can't drop anything ON them.
-    if (index == NSOutlineViewDropOnItemIndex) {
-		return NSDragOperationNone;
-    }
-	return NSDragOperationGeneric; 
-}
-
-/* writeItems [delegate]
- * Collect the selected folders ready for dragging.
- */
--(BOOL)outlineView:(NSOutlineView *)olv writeItems:(NSArray*)items toPasteboard:(NSPasteboard*)pboard
-{
-	return [self copyTableSelection:items toPasteboard:pboard];
-}
-
-/* copyTableSelection
- * This is the common copy selection code. We build an array of dictionary entries each of
- * which include details of each selected folder in the standard RSS item format defined by
- * Ranchero NetNewsWire. See http://ranchero.com/netnewswire/rssclipboard.php for more details.
- */
--(BOOL)copyTableSelection:(NSArray *)items toPasteboard:(NSPasteboard *)pboard
-{
-	NSInteger count = items.count;
-	NSMutableArray * externalDragData = [NSMutableArray arrayWithCapacity:count];
-	NSMutableArray * internalDragData = [NSMutableArray arrayWithCapacity:count];
-	NSMutableString * stringDragData = [NSMutableString string];
-	NSMutableArray * arrayOfURLs = [NSMutableArray arrayWithCapacity:count];
-	NSMutableArray * arrayOfTitles = [NSMutableArray arrayWithCapacity:count];
-	NSInteger index;
-
-	// We'll create the types of data on the clipboard.
-	[pboard declareTypes:@[MA_PBoardType_FolderList, MA_PBoardType_RSSSource, @"WebURLsWithTitlesPboardType", NSPasteboardTypeString] owner:self]; 
-
-	// Create an array of NSNumber objects containing the selected folder IDs.
-	NSInteger countOfItems = 0;
-	for (index = 0; index < count; ++index)
-	{
-		TreeNode * node = items[index];
-		Folder * folder = node.folder;
-
-		if (folder.type == VNAFolderTypeRSS
-            || folder.type == VNAFolderTypeOpenReader
-            || folder.type == VNAFolderTypeSmart
-            || folder.type == VNAFolderTypeGroup
-            || folder.type == VNAFolderTypeSearch
-            || folder.type == VNAFolderTypeTrash) {
-			[internalDragData addObject:@(node.nodeId)];
-			++countOfItems;
-		}
-
-		if (folder.type == VNAFolderTypeRSS
-            || folder.type == VNAFolderTypeOpenReader) {
-			NSString * feedURL = folder.feedURL;
-			
-			NSMutableDictionary * dict = [NSMutableDictionary dictionary];
-			[dict setValue:folder.name forKey:@"sourceName"];
-			[dict setValue:folder.description forKey:@"sourceDescription"];
-			[dict setValue:feedURL forKey:@"sourceRSSURL"];
-			[dict setValue:folder.homePage forKey:@"sourceHomeURL"];
-			[externalDragData addObject:dict];
-
-			[stringDragData appendFormat:@"%@\n", feedURL];
-			
-			NSURL * safariURL = [NSURL URLWithString:feedURL];
-			if (safariURL != nil && !safariURL.fileURL)
-			{
-				if (![@"feed" isEqualToString:safariURL.scheme])
-				{
-					feedURL = [NSString stringWithFormat:@"feed:%@", safariURL.resourceSpecifier];
-				}
-				[arrayOfURLs addObject:feedURL];
-				[arrayOfTitles addObject:folder.name];
-			}
-		}
-	}
-
-	// Copy the data to the pasteboard 
-	[pboard setPropertyList:externalDragData forType:MA_PBoardType_RSSSource];
-	[pboard setString:stringDragData forType:NSPasteboardTypeString];
-	[pboard setPropertyList:internalDragData forType:MA_PBoardType_FolderList]; 
-	[pboard setPropertyList:@[arrayOfURLs, arrayOfTitles] forType:@"WebURLsWithTitlesPboardType"]; 
-	return countOfItems > 0; 
-}
-
-/* moveFoldersUndo
- * Undo handler to move folders back.
- */
--(void)moveFoldersUndo:(id)anObject
-{
-	[self moveFolders:(NSArray *)anObject withGoogleSync:YES];
-}
-
-/* moveFolders
- * Reparent folders using the information in the specified array. The array consists of
- * a collection of NSNumber triples: the first number is the ID of the folder to move,
- * the second number is the ID of the parent to which the folder should be moved,
- * the third number is the ID of the folder's new predecessor sibling.
- */
--(BOOL)moveFolders:(NSArray *)array withGoogleSync:(BOOL)sync
-{
-	NSAssert(([array count] % 3) == 0, @"Incorrect number of items in array passed to moveFolders");
-	NSInteger count = array.count;
-	__block NSInteger index = 0;
-
-	// Need to create a running undo array
-	NSMutableArray * undoArray = [[NSMutableArray alloc] initWithCapacity:count];
-
-	// Internal drag and drop so we're just changing the parent IDs around. One thing
-	// we have to watch for is to make sure that we don't re-parent to a subordinate
-	// folder.
-	Database * dbManager = [Database sharedManager];
-	BOOL autoSort = [Preferences standardPreferences].foldersTreeSortMethod != VNAFolderSortManual;
-
-	while (index < count)
-	{
-		NSInteger folderId = [array[index++] integerValue];
-		NSInteger newParentId = [array[index++] integerValue];
-		NSInteger newPredecessorId = [array[index++] integerValue];
-		Folder * folder = [dbManager folderFromID:folderId];
-		NSInteger oldParentId = folder.parentId;
-		
-		TreeNode * node = [self.rootNode nodeFromID:folderId];
-		TreeNode * oldParent = [self.rootNode nodeFromID:oldParentId];
-		NSInteger oldChildIndex = [oldParent indexOfChild:node];
-		NSInteger oldPredecessorId = (oldChildIndex > 0) ? [oldParent childByIndex:(oldChildIndex - 1)].nodeId : 0;
-		TreeNode * newParent = [self.rootNode nodeFromID:newParentId];
-		TreeNode * newPredecessor = [newParent nodeFromID:newPredecessorId];
-		if ((newPredecessor == nil) || (newPredecessor == newParent))
-			newPredecessorId = 0;
-		NSInteger newChildIndex = (newPredecessorId > 0) ? ([newParent indexOfChild:newPredecessor] + 1) : 0;
-        
-		if (newParentId == oldParentId)
-		{
-			// With automatic sorting, moving under the same parent is impossible.
-            if (autoSort) {
-				continue;
-            }
-			// No need to move if destination is the same as origin.
-            if (newPredecessorId == oldPredecessorId) {
-				continue;
-            }
-			// Adjust the index for the removal of the old child.
-            if (newChildIndex > oldChildIndex) {
-                --newChildIndex;
-            }
-				
-		}
-		else
-		{
-			if (!newParent.canHaveChildren)
-				[newParent setCanHaveChildren:YES];
-			if ([dbManager setParent:newParentId forFolder:folderId])
-			{
-				if (sync && folder.type == VNAFolderTypeOpenReader)
-				{
-					OpenReader * myReader = [OpenReader sharedManager];
-					// remove old label
-					NSString * folderName = [dbManager folderFromID:oldParentId].name;
-					[myReader setFolderLabel:folderName forFeed:folder.remoteId set:FALSE];
-					// add new label
-					folderName = [dbManager folderFromID:newParentId].name;
-					if (folderName) {
-					    [myReader setFolderLabel:folderName forFeed:folder.remoteId set:TRUE];
-					}
-				}
-			}
-			else
-				continue;
-		}
-		
-		if (!autoSort)
-		{
-			if (oldPredecessorId > 0)
-			{
-				if (![dbManager setNextSibling:folder.nextSiblingId forFolder:oldPredecessorId])
-					continue;
-			}
-			else
-			{
-				if (![dbManager setFirstChild:folder.nextSiblingId forFolder:oldParentId])
-					continue;
-			}
-		}
-		
-		[oldParent removeChild:node andChildren:NO];
-		[newParent addChild:node atIndex:newChildIndex];
-		
-		// Put at beginning of undoArray in order to undo moves in reverse order.
-		[undoArray insertObject:@(folderId) atIndex:0u];
-		[undoArray insertObject:@(oldParentId) atIndex:1u];
-		[undoArray insertObject:@(oldPredecessorId) atIndex:2u];
-		
-		if (!autoSort)
-		{
-			if (newPredecessorId > 0)
-			{
-				if (![dbManager setNextSibling:[dbManager folderFromID:newPredecessorId].nextSiblingId
-                                     forFolder:folderId]) {
-					continue;
-                }
-				[dbManager setNextSibling:folderId forFolder:newPredecessorId];
-			}
-			else
-			{
-				NSInteger oldFirstChildId = (newParent == self.rootNode) ? dbManager.firstFolderId : newParent.folder.firstChildId;
-				if (![dbManager setNextSibling:oldFirstChildId forFolder:folderId])
-					continue;
-				[dbManager setFirstChild:folderId forFolder:newParentId];
-			}
-		}
-	}
-	
-	// If undo array is empty, then nothing has been moved.
-	if (undoArray.count == 0u)
-	{
-		return NO;
-	}
-	
-	// Set up to undo this action
-	NSUndoManager * undoManager = NSApp.mainWindow.undoManager;
-	[undoManager registerUndoWithTarget:self selector:@selector(moveFoldersUndo:) object:undoArray];
-	[undoManager setActionName:NSLocalizedString(@"Move Folders", nil)];
-	
-	// Make the outline control reload its data
-	[self.outlineView reloadData];
-
-	// If any parent was a collapsed group, expand it now
-	for (index = 0; index < count; index += 2)
-	{
-		NSInteger newParentId = [array[++index] integerValue];
-		if (newParentId != VNAFolderTypeRoot)
-		{
-			TreeNode * parentNode = [self.rootNode nodeFromID:newParentId];
-			if (![self.outlineView isItemExpanded:parentNode] && [self.outlineView isExpandable:parentNode])
-				[self.outlineView expandItem:parentNode];
-		}
-	}
-	
-	// Properly set selection back to the original items. This has to be done after the
-	// refresh so that rowForItem returns the new positions.
-	NSMutableIndexSet * selIndexSet = [[NSMutableIndexSet alloc] init];
-	NSInteger selRowIndex = 9999;
-	for (index = 0; index < count; index += 2)
-	{
-		NSInteger folderId = [array[index++] integerValue];
-		NSInteger rowIndex = [self.outlineView rowForItem:[self.rootNode nodeFromID:folderId]];
-		selRowIndex = MIN(selRowIndex, rowIndex);
-		[selIndexSet addIndex:rowIndex];
-	}
-	[self.outlineView scrollRowToVisible:selRowIndex];
-	[self.outlineView selectRowIndexes:selIndexSet byExtendingSelection:NO];
-	return YES;
-}
-
-/* acceptDrop
- * Accept a drop on or between nodes either from within the folder view or from outside.
- */
--(BOOL)outlineView:(NSOutlineView *)olv acceptDrop:(id <NSDraggingInfo>)info item:(id)targetItem childIndex:(NSInteger)child
-{ 
-	__block NSInteger childIndex = child;
-	NSPasteboard * pb = [info draggingPasteboard];
-	NSString * type = [pb availableTypeFromArray:@[MA_PBoardType_FolderList, MA_PBoardType_RSSSource, @"WebURLsWithTitlesPboardType", NSPasteboardTypeString]];
-	TreeNode * node = targetItem ? (TreeNode *)targetItem : self.rootNode;
-
-	NSInteger parentId = node.nodeId;
-	if ((childIndex == NSOutlineViewDropOnItemIndex) || (childIndex < 0))
-		childIndex = 0;
-
-	// Check the type
-	if ([type isEqualToString:NSPasteboardTypeString])
-	{
-		// This is possibly a URL that we'll handle as a potential feed subscription. It's
-		// not our call to make though.
-		NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
-		[APPCONTROLLER createNewSubscription:[pb stringForType:type] underFolder:parentId afterChild:predecessorId];
-		return YES;
-	}
-	if ([type isEqualToString:MA_PBoardType_FolderList])
-	{
-		Database * db = [Database sharedManager];
-		NSArray * arrayOfSources = [pb propertyListForType:type];
-		NSInteger count = arrayOfSources.count;
-		NSInteger index;
-		NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
-
-		// Create an NSArray of triples (folderId, newParentId, predecessorId) that will be passed to moveFolders
-		// to do the actual move.
-		NSMutableArray * array = [[NSMutableArray alloc] initWithCapacity:count * 3];
-		NSInteger trashFolderId = db.trashFolderId;
-		for (index = 0; index < count; ++index)
-		{
-			NSInteger folderId = [arrayOfSources[index] integerValue];
-			
-			// Don't allow the trash folder to move under a group folder, because the group folder could get deleted.
-			// Also, don't allow perverse moves.  We should probably do additional checking: not only whether the new parent
-			// is the folder itself but also whether the new parent is a subfolder.
-			if (((folderId == trashFolderId) && (node != self.rootNode)) || (folderId == parentId) || (folderId == predecessorId))
-				continue;
-			[array addObject:@(folderId)];
-			[array addObject:@(parentId)];
-			[array addObject:@(predecessorId)];
-			predecessorId = folderId;
-		}
-
-		// Do the move
-		BOOL result = [self moveFolders:array withGoogleSync:YES];
-		return result;
-	}
-	if ([type isEqualToString:MA_PBoardType_RSSSource])
-	{
-		Database * dbManager = [Database sharedManager];
-		NSArray * arrayOfSources = [pb propertyListForType:type];
-		NSInteger count = arrayOfSources.count;
-		NSInteger index;
-		
-		// This is an RSS drag using the protocol defined by Ranchero for NetNewsWire. See
-		// http://ranchero.com/netnewswire/rssclipboard.php for more details.
-		//
-		__block NSInteger folderToSelect = -1;
-		for (index = 0; index < count; ++index)
-		{
-			NSDictionary * sourceItem = arrayOfSources[index];
-			NSString * feedTitle = [sourceItem valueForKey:@"sourceName"];
-			NSString * feedHomePage = [sourceItem valueForKey:@"sourceHomeURL"];
-			NSString * feedURL = [sourceItem valueForKey:@"sourceRSSURL"];
-			NSString * feedDescription = [sourceItem valueForKey:@"sourceDescription"];
-
-			if ((feedURL != nil) && [dbManager folderFromFeedURL:feedURL] == nil)
-			{
-				NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
-				NSInteger folderId = [dbManager addRSSFolder:feedTitle underParent:parentId afterChild:predecessorId subscriptionURL:feedURL];
-                if (feedDescription != nil) {
-                    [dbManager setDescription:feedDescription forFolder:folderId];
-                }
-                if (feedHomePage != nil) {
-                    [dbManager setHomePage:feedHomePage forFolder:folderId];
-                }
-                if (folderId > 0) {
-					folderToSelect = folderId;
-                }
-				++childIndex;
-			}
-		}
-
-		// If parent was a group, expand it now
-		if (parentId != VNAFolderTypeRoot)
-			[self.outlineView expandItem:[self.rootNode nodeFromID:parentId]];
-		
-		// Select a new folder
-		if (folderToSelect > 0)
-			[self selectFolder:folderToSelect];
-		
-		return YES;
-	}
-	if ([type isEqualToString:@"WebURLsWithTitlesPboardType"])
-	{
-		Database * dbManager = [Database sharedManager];
-		NSArray * webURLsWithTitles = [pb propertyListForType:type];
-		NSArray * arrayOfURLs = webURLsWithTitles[0];
-		NSArray * arrayOfTitles = webURLsWithTitles[1];
-		NSInteger count = arrayOfURLs.count;
-		NSInteger index;
-		
-		__block NSInteger folderToSelect = -1;
-		for (index = 0; index < count; ++index)
-		{
-			NSString * feedTitle = arrayOfTitles[index];
-			NSString * feedURL = arrayOfURLs[index];
-			NSURL * draggedURL = [NSURL URLWithString:feedURL];
-			if ((draggedURL.scheme != nil) && [draggedURL.scheme isEqualToString:@"feed"])
-				feedURL = [NSString stringWithFormat:@"http:%@", draggedURL.resourceSpecifier];
-			
-			if ([dbManager folderFromFeedURL:feedURL] == nil)
-			{
-				NSInteger predecessorId = (childIndex > 0) ? [node childByIndex:(childIndex - 1)].nodeId : 0;
-				NSInteger newFolderId = [dbManager addRSSFolder:feedTitle underParent:parentId afterChild:predecessorId subscriptionURL:feedURL];
-                if (newFolderId > 0) {
-					folderToSelect = newFolderId;
-                }
-				++childIndex;
-			}
-		}
-		
-		// If parent was a group, expand it now
-		if (parentId != VNAFolderTypeRoot)
-			[self.outlineView expandItem:[self.rootNode nodeFromID:parentId]];
-		
-		// Select a new folder
-		if (folderToSelect > 0)
-			[self selectFolder:folderToSelect];
-		
-		return YES;
-	}
-	return NO; 
-}
-
-/* setSearch
- * Set string to filter nodes by name, description, url
- */
--(void)setSearch:(NSString *)f {
-    NSString* tf = [f stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-
-    if (tf.length == 0) {
-        self.outlineView.filterPredicate = nil;
-        return;
-    }
-
-    NSString *match = [NSString stringWithFormat:@"*%@*", tf];
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"folder.name like[cd] %@ OR folder.feedDescription like[cd] %@ OR folder.feedURL like[cd] %@", match, match, match];
-
-    if ([self.outlineView.filterPredicate.predicateFormat isEqualToString:predicate.predicateFormat]) {
-        return;
-    }
-
-    self.outlineView.filterPredicate = predicate;
 }
 
 // MARK: - Text-field delegate
