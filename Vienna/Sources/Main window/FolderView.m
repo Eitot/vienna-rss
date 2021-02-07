@@ -59,6 +59,18 @@
 	return [super becomeFirstResponder];
 }
 
+- (BOOL)validateProposedFirstResponder:(NSResponder *)responder
+                              forEvent:(NSEvent *)event
+{
+    // This prevents the unread count from becoming a responder; it will behave
+    // like a view instead of a button.
+    if ([((NSButton *)responder).identifier isEqualToString:@"CountButton"]) {
+        return NO;
+    } else {
+        return [super validateProposedFirstResponder:responder forEvent:event];
+    }
+}
+
 /* draggingSession:sourceOperationMaskForDraggingContext
  * Let the control know the expected behaviour for local and external drags.
  */

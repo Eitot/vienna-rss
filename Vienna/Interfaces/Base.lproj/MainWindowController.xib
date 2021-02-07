@@ -75,7 +75,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="288" height="574"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <outlineView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" autosaveName="outViewer" rowSizeStyle="automatic" viewBased="YES" indentationPerLevel="14" outlineTableColumn="xXs-dn-GMc" id="Kk7-ax-B3r" customClass="FolderView">
+                                                <outlineView focusRingType="none" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" selectionHighlightStyle="sourceList" columnReordering="NO" columnResizing="NO" autosaveName="outViewer" rowHeight="22" rowSizeStyle="systemDefault" viewBased="YES" indentationPerLevel="16" outlineTableColumn="xXs-dn-GMc" id="Kk7-ax-B3r" customClass="FolderView">
                                                     <rect key="frame" x="0.0" y="0.0" width="288" height="574"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <size key="intercellSpacing" width="3" height="0.0"/>
@@ -87,7 +87,7 @@
                                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" white="0.33333298560000002" alpha="1" colorSpace="calibratedWhite"/>
                                                             </tableHeaderCell>
-                                                            <textFieldCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" alignment="left" id="xSe-Hs-fQp">
+                                                            <textFieldCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" refusesFirstResponder="YES" alignment="left" id="xSe-Hs-fQp">
                                                                 <font key="font" metaFont="system"/>
                                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -98,36 +98,37 @@
                                                                     <rect key="frame" x="1" y="0.0" width="285" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
-                                                                        <stackView orientation="horizontal" alignment="centerY" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" translatesAutoresizingMaskIntoConstraints="NO" id="pIE-sj-4zj">
-                                                                            <rect key="frame" x="8" y="0.0" width="269" height="17"/>
+                                                                        <stackView orientation="horizontal" alignment="centerY" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" fixedFrame="YES" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pIE-sj-4zj">
+                                                                            <rect key="frame" x="0.0" y="0.0" width="285" height="17"/>
+                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <beginningViews>
                                                                                 <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lcA-Q2-VTq">
                                                                                     <rect key="frame" x="0.0" y="2" width="14" height="14"/>
                                                                                     <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="NSActionTemplate" id="eG1-9A-QT6"/>
                                                                                 </imageView>
-                                                                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsExpansionToolTips="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9YN-89-uuK">
-                                                                                    <rect key="frame" x="20" y="0.0" width="96" height="17"/>
-                                                                                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="jkm-Os-POv">
+                                                                                <textField horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsExpansionToolTips="YES" translatesAutoresizingMaskIntoConstraints="NO" id="9YN-89-uuK">
+                                                                                    <rect key="frame" x="20" y="1" width="96" height="16"/>
+                                                                                    <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" alignment="left" title="Table View Cell" id="jkm-Os-POv">
                                                                                         <font key="font" metaFont="system"/>
-                                                                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                                                         <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                                                                     </textFieldCell>
                                                                                 </textField>
                                                                             </beginningViews>
                                                                             <endViews>
-                                                                                <button hidden="YES" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dWK-XN-Yum">
-                                                                                    <rect key="frame" x="197" y="0.0" width="40" height="17"/>
-                                                                                    <buttonCell key="cell" type="inline" title="1234" bezelStyle="inline" alignment="center" borderStyle="border" inset="2" id="5P1-nD-3dP">
-                                                                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                                <button identifier="CountButton" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dWK-XN-Yum">
+                                                                                    <rect key="frame" x="217" y="0.0" width="20" height="17"/>
+                                                                                    <buttonCell key="cell" type="inline" title="0" bezelStyle="inline" alignment="center" refusesFirstResponder="YES" borderStyle="border" inset="2" id="5P1-nD-3dP">
+                                                                                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                                                         <font key="font" metaFont="smallSystemBold"/>
                                                                                     </buttonCell>
                                                                                 </button>
                                                                                 <imageView identifier="FolderAuxImageView" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QKO-B3-mFR">
-                                                                                    <rect key="frame" x="245" y="9" width="0.0" height="0.0"/>
-                                                                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" id="AH9-Xi-kqD"/>
+                                                                                    <rect key="frame" x="245" y="1" width="16" height="16"/>
+                                                                                    <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="folderError" id="AH9-Xi-kqD"/>
                                                                                 </imageView>
                                                                                 <progressIndicator identifier="FolderProgressIndicator" wantsLayer="YES" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="W0x-GO-5Lx">
-                                                                                    <rect key="frame" x="253" y="1" width="16" height="16"/>
+                                                                                    <rect key="frame" x="269" y="1" width="16" height="16"/>
                                                                                 </progressIndicator>
                                                                             </endViews>
                                                                             <visibilityPriorities>
@@ -146,16 +147,10 @@
                                                                             </customSpacing>
                                                                         </stackView>
                                                                     </subviews>
-                                                                    <constraints>
-                                                                        <constraint firstItem="pIE-sj-4zj" firstAttribute="top" secondItem="Ofe-Wq-3Ch" secondAttribute="top" id="Lce-z5-2Lo"/>
-                                                                        <constraint firstAttribute="trailing" secondItem="pIE-sj-4zj" secondAttribute="trailing" constant="8" id="Pmz-FE-DFq"/>
-                                                                        <constraint firstItem="pIE-sj-4zj" firstAttribute="leading" secondItem="Ofe-Wq-3Ch" secondAttribute="leading" constant="8" id="aKz-v3-hUT"/>
-                                                                        <constraint firstAttribute="bottom" secondItem="pIE-sj-4zj" secondAttribute="bottom" id="hIC-ki-aPk"/>
-                                                                    </constraints>
                                                                     <connections>
                                                                         <outlet property="auxiliaryImageView" destination="QKO-B3-mFR" id="hfo-9b-eLL"/>
                                                                         <outlet property="imageView" destination="lcA-Q2-VTq" id="H3I-dZ-yGG"/>
-                                                                        <outlet property="refreshProgressIndicator" destination="W0x-GO-5Lx" id="OSf-3q-cbQ"/>
+                                                                        <outlet property="progressIndicator" destination="W0x-GO-5Lx" id="OSf-3q-cbQ"/>
                                                                         <outlet property="stackView" destination="pIE-sj-4zj" id="6EU-AI-99q"/>
                                                                         <outlet property="textField" destination="9YN-89-uuK" id="NHI-Mr-MGJ"/>
                                                                         <outlet property="unreadCountButton" destination="dWK-XN-Yum" id="RR0-5F-Tti"/>
@@ -956,5 +951,6 @@
         <image name="StyleTemplate" width="15" height="15"/>
         <image name="SyncTemplate" width="38" height="24"/>
         <image name="filter-icon" width="16" height="16"/>
+        <image name="folderError" width="16" height="16"/>
     </resources>
 </document>

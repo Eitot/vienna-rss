@@ -20,54 +20,41 @@
 import Cocoa
 
 class FolderTreeCell: NSTableCellView {
-    
-    @IBOutlet weak var refreshProgressIndicator: NSProgressIndicator?
-    @IBOutlet weak var auxiliaryImageView: NSImageView?
-    @IBOutlet weak var stackView: NSStackView?
-    @IBOutlet weak var unreadCountButton: NSButton?
-    
+
+    // MARK: Properties
+
+    @IBOutlet private weak var stackView: NSStackView!
+
+    // These outlets must be strong, as removing them from the stack view,
+    // removes them from the view hierarchy also.
+    @IBOutlet private var unreadCountButton: NSButton!
+    @IBOutlet private var progressIndicator: NSProgressIndicator!
+    @IBOutlet private var auxiliaryImageView: NSImageView!
+
     @objc var inProgress = false {
         didSet {
-            if (inProgress == true) {
-                auxiliaryImageView?.image = nil
-                stackView?.views[3].isHidden = true
-                stackView?.views[4].isHidden = false
-                refreshProgressIndicator?.startAnimation(nil)
+            if inProgress {
+                auxiliaryImageView.isHidden = true
+                progressIndicator.isHidden = false
+                progressIndicator.startAnimation(nil)
             } else {
-                refreshProgressIndicator?.stopAnimation(nil)
-                stackView?.views[4].isHidden = true
+                progressIndicator.stopAnimation(nil)
+                progressIndicator.isHidden = true
             }
         }
     }
-    
+
     @objc var didError = false {
         didSet {
-            if (didError == true) {
-                auxiliaryImageView?.image = #imageLiteral(resourceName: "folderError.tiff")
-                stackView?.views[3].isHidden = false
-                
-            } else {
-                auxiliaryImageView?.image = nil
-                stackView?.views[3].isHidden = true
-            }
+            auxiliaryImageView.isHidden = !didError
         }
     }
-    
+
     @objc var unreadCount = 0 {
         didSet {
-            unreadCountButton?.title = "\(unreadCount)"
-            if (unreadCount > 0) {
-                stackView?.views[2].isHidden = false
-            } else {
-                stackView?.views[2].isHidden = true
-            }
+            unreadCountButton.title = "\(unreadCount)"
+            unreadCountButton.isHidden = unreadCount <= 0
         }
     }
-    
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
 
-        // Drawing code here.
-    }
-    
 }
