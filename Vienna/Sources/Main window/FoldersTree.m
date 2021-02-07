@@ -40,7 +40,6 @@
 @property (nonatomic) TreeNode *rootNode;
 @property (nonatomic) NSImage *folderErrorImage;
 @property (nonatomic) BOOL blockSelectionHandler;
-@property (nonatomic) BOOL canRenameFolders;
 @property (nonatomic) BOOL useToolTips;
 
 @end
@@ -57,7 +56,6 @@
 		// of containing the other nodes.
 		_rootNode = [[TreeNode alloc] init:nil atIndex:0 folder:nil canHaveChildren:YES];
 		_blockSelectionHandler = NO;
-		_canRenameFolders = NO;
 		_useToolTips = NO;
 	}
 
@@ -84,7 +82,6 @@
     self.folderErrorImage.accessibilityDescription = NSLocalizedString(@"Error", nil);
 
 	// Allow a second click in a node to edit the node
-	self.outlineView.action = @selector(handleSingleClick:);
 	self.outlineView.doubleAction = @selector(handleDoubleClick:);
 	self.outlineView.target = self;
 
@@ -654,27 +651,11 @@
 	[self.outlineView reloadData];
 }
 
-/* handleSingleClick
- * If the folder is already highlighted, then edit the folder name.
- */
--(void)handleSingleClick:(id)sender
-{
-	if (self.canRenameFolders)
-	{
-		NSInteger clickedRow = self.outlineView.clickedRow;
-		if (clickedRow >= 0)
-			[NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(renameFolderByTimer:) userInfo:[self.outlineView itemAtRow:clickedRow] repeats:NO];
-	}
-}
-
 /* handleDoubleClick
  * Handle the user double-clicking a node.
  */
 -(void)handleDoubleClick:(id)sender
 {
-	// Prevent the first click of the double click from triggering immediate folder name editing.
-	[self enableFoldersRenamingAfterDelay];
-	
 	TreeNode * node = [self.outlineView itemAtRow:self.outlineView.selectedRow];
 
 	if (node.folder.type == VNAFolderTypeRSS || node.folder.type == VNAFolderTypeOpenReader)
@@ -827,34 +808,6 @@
     }
 }
 
-/* renameFolderByTimer
- * If no disabling events have occurred during the timer interval, rename the folder.
- */
--(void)renameFolderByTimer:(id)sender
-{
-    if (self.canRenameFolders)
-    {
-        [self renameFolder:((TreeNode *)[sender userInfo]).nodeId];
-    }
-}
-
-/* enableFoldersRenaming
- * Enable the renaming of folders.
- */
--(void)enableFoldersRenaming:(id)sender
-{
-    self.canRenameFolders = YES;
-}
-
-/* enableFoldersRenamingAfterDelay
- * Set a timer to enable renaming of folders.
- */
--(void)enableFoldersRenamingAfterDelay
-{
-    self.canRenameFolders = NO;
-    [NSTimer scheduledTimerWithTimeInterval:[NSEvent doubleClickInterval] target:self selector:@selector(enableFoldersRenaming:) userInfo:nil repeats:NO];
-}
-
 /* outlineViewWillBecomeFirstResponder
  * When outline view becomes first responder, bring the article view to the front,
  * and prevent immediate folder renaming.
@@ -862,7 +815,6 @@
 -(void)outlineViewWillBecomeFirstResponder
 {
     [self.controller.browser setActiveTabToPrimaryTab];
-    [self enableFoldersRenamingAfterDelay];
 }
 
 /* mainView
@@ -979,6 +931,8 @@
             } else {
                 myInfo[NSForegroundColorAttributeName] = NSColor.labelColor;
         }
+
+        folderTreeCell.textField.delegate = self;
         
         // Use the auxiliary position of the feed item to show
         // the refresh icon if the feed is being refreshed, or an
@@ -1028,8 +982,6 @@
  */
 -(void)outlineViewSelectionDidChange:(NSNotification *)notification
 {
-	[self enableFoldersRenamingAfterDelay];
-	
 	if (!self.blockSelectionHandler)
 	{
 		TreeNode * node = [self.outlineView itemAtRow:self.outlineView.selectedRow];
@@ -1523,6 +1475,27 @@
     }
 
     self.outlineView.filterPredicate = predicate;
+}
+
+// MARK: - Text-field delegate
+
+- (BOOL)control:(NSControl *)control
+textShouldEndEditing:(NSText *)fieldEditor {
+    // Prevent ending the editing mode if the user cleared the text field.
+    // FIXME: It is currently still possible to select something different.
+    if (fieldEditor.string.length == 0) {
+        return NO;
+    } else {
+        return YES;
+    }
+}
+
+- (void)controlTextDidBeginEditing:(NSNotification *)obj {
+    NSLog(@"Begin editing");
+}
+
+- (void)controlTextDidEndEditing:(NSNotification *)obj {
+    NSLog(@"End editing");
 }
 
 @end

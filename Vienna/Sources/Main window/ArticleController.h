@@ -25,7 +25,6 @@
 
 @class Article;
 @class ArticleListView;
-@class BackTrackArray;
 @class FoldersTree;
 @class UnifiedDisplayView;
 
@@ -45,7 +44,6 @@
 	NSInteger currentFolderId;
 	NSDictionary * articleSortSpecifiers;
 	NSString * sortColumnIdentifier;
-	BackTrackArray * backtrackArray;
 	BOOL isBacktracking;
 	BOOL shouldPreserveSelectedArticle;
 	Article * articleToPreserve;
@@ -63,7 +61,6 @@
 @property (nonatomic, copy) NSArray * currentArrayOfArticles;
 @property (nonatomic, copy) NSArray * folderArrayOfArticles;
 @property (nonatomic) NSDictionary * articleSortSpecifiers;
-@property (nonatomic) BackTrackArray * backtrackArray;
 
 // Public functions
 -(NSView<ArticleBaseView, BaseView> *)mainArticleView;

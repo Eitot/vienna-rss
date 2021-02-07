@@ -20,12 +20,11 @@
 
 @import Cocoa;
 
-@interface FolderView : NSOutlineView <NSMenuItemValidation> {
+@interface FolderView : NSOutlineView <NSMenuItemValidation, NSTextFieldDelegate> {
 	NSString * backupString;
 }
 
 -(void)keyDown:(NSEvent *)theEvent;
--(void)prvtResizeTheFieldEditor;
 
 @property (nonatomic) NSPredicate* filterPredicate;
 

@@ -35,6 +35,8 @@
 
 @interface ArticleController ()
 
+@property (nonatomic) BackTrackArray *backtrackArray;
+
 -(NSArray *)applyFilter:(NSArray *)unfilteredArray;
 -(void)setSortColumnIdentifier:(NSString *)str;
 -(void)innerMarkReadByArray:(NSArray *)articleArray readFlag:(BOOL)readFlag;
@@ -43,7 +45,7 @@
 @end
 
 @implementation ArticleController
-@synthesize mainArticleView, currentArrayOfArticles, folderArrayOfArticles, articleSortSpecifiers, backtrackArray;
+@synthesize mainArticleView, currentArrayOfArticles, folderArrayOfArticles, articleSortSpecifiers;
 
 /* init
  * Initialise.
@@ -122,7 +124,7 @@
 		[self setSortColumnIdentifier:[prefs stringForKey:MAPref_SortColumn]];
 		
 		// Create a backtrack array
-		backtrackArray = [[BackTrackArray alloc] initWithMaximum:prefs.backTrackQueueSize];
+		_backtrackArray = [[BackTrackArray alloc] initWithMaximum:prefs.backTrackQueueSize];
 		
 		// Register for notifications
 		NSNotificationCenter * nc = [NSNotificationCenter defaultCenter];
@@ -1060,7 +1062,7 @@
 -(void)addBacktrack:(NSString *)guid
 {
 	if (!isBacktracking)
-		[backtrackArray addToQueue:currentFolderId guid:guid];
+		[_backtrackArray addToQueue:currentFolderId guid:guid];
 }
 
 /* goForward
@@ -1071,7 +1073,7 @@
 	NSInteger folderId;
 	NSString * guid;
 	
-	if ([backtrackArray nextItemAtQueue:&folderId guidPointer:&guid])
+	if ([_backtrackArray nextItemAtQueue:&folderId guidPointer:&guid])
 	{
 		isBacktracking = YES;
 		[self selectFolderAndArticle:folderId guid:guid];
@@ -1087,7 +1089,7 @@
 	NSInteger folderId;
 	NSString * guid;
 	
-	if ([backtrackArray previousItemAtQueue:&folderId guidPointer:&guid])
+	if ([_backtrackArray previousItemAtQueue:&folderId guidPointer:&guid])
 	{
 		isBacktracking = YES;
 		[self selectFolderAndArticle:folderId guid:guid];
@@ -1100,7 +1102,7 @@
  */
 -(BOOL)canGoForward
 {
-	return !backtrackArray.atEndOfQueue;
+	return !_backtrackArray.atEndOfQueue;
 }
 
 /* canGoBack
@@ -1108,7 +1110,7 @@
  */
 -(BOOL)canGoBack
 {
-	return !backtrackArray.atStartOfQueue;
+	return !_backtrackArray.atStartOfQueue;
 }
 
 /* handleArticleListStateChange
